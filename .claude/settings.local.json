@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx shadcn@latest add dashboard-01:*)",
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(grep:*)",
+      "Bash(cat:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(findstr:*)",
+      "Bash(dir /s \"c:\\Users\\muqta\\workspace\\resturant\\restaurant-app\\app\")"
+    ]
+  }
+}
