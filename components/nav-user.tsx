@@ -1,12 +1,16 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { useTheme } from "next-themes"
 import {
   BadgeCheck,
   Bell,
   ChevronsUpDown,
   CreditCard,
   LogOut,
+  Moon,
   Sparkles,
+  Sun,
 } from "lucide-react"
 
 import {
@@ -20,6 +24,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -40,6 +46,12 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const { theme, setTheme } = useTheme()
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   return (
     <SidebarMenu>
@@ -52,7 +64,7 @@ export function NavUser({
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg">XS</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -71,7 +83,7 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">XS</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -79,28 +91,26 @@ export function NavUser({
                 </div>
               </div>
             </DropdownMenuLabel>
+
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
+
+            {/* Theme Toggle */}
+            {isMounted && (
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs">Theme</DropdownMenuLabel>
+                <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+                  <DropdownMenuRadioItem value="light">
+                    <Sun />
+                    Light
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="dark">
+                    <Moon />
+                    Dark
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuGroup>
+            )}
+
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <LogOut />
