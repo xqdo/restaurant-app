@@ -7,7 +7,7 @@ export function handleApiError(error: unknown) {
 
   // Zod validation errors
   if (error instanceof ZodError) {
-    return errorResponse('Validation error', 400, error.errors)
+    return errorResponse('Validation error', 400, error.issues)
   }
 
   // Prisma errors

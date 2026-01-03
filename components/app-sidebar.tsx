@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { usePathname } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
 import {
   IconUsers,
   IconTable,
@@ -12,6 +13,8 @@ import {
   IconReport,
   IconDashboard,
   IconInnerShadowTop,
+  IconToolsKitchen2,
+  IconHistory,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -23,57 +26,77 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  SidebarGroup,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
 } from "@/components/ui/sidebar"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const navItems = [
   {
     title: "لوحة التحكم",
     url: "/",
     icon: IconDashboard,
+    roles: [], // All roles can access
   },
   {
     title: "الطاولات",
     url: "/tables",
     icon: IconTable,
+    roles: ['Admin', 'Manager', 'Waiter'],
   },
   {
     title: "الطلبات",
     url: "/orders",
     icon: IconShoppingCart,
+    roles: ['Admin', 'Manager', 'Waiter'],
+  },
+  {
+    title: "المطبخ",
+    url: "/kitchen",
+    icon: IconToolsKitchen2,
+    roles: ['Admin', 'Kitchen'],
   },
   {
     title: "الأصناف",
     url: "/items",
     icon: IconPackage,
+    roles: ['Admin', 'Manager'],
   },
   {
     title: "الخصومات",
     url: "/discounts",
     icon: IconDiscount,
+    roles: ['Admin', 'Manager', 'Cashier'],
   },
   {
     title: "إدارة المستخدمين",
     url: "/users",
     icon: IconUsers,
+    roles: ['Admin'],
   },
   {
     title: "التوصيل",
     url: "/deliveries",
     icon: IconTruck,
+    roles: ['Admin', 'Delivery'],
   },
   {
     title: "التقارير",
     url: "/reports",
     icon: IconReport,
+    roles: ['Admin', 'Manager'],
+  },
+  {
+    title: "سجلات النشاط",
+    url: "/audit",
+    icon: IconHistory,
+    roles: ['Admin'],
   },
 ]
 
 const data = {
-  user: {
-    name: "أحمد محمد",
-    email: "manager@restaurant.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   teams: [
     {
       name: "مطعم",
@@ -85,8 +108,22 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
+  const { user, isLoading } = useAuth()
 
-  const navMain = navItems.map(item => ({
+  // Filter nav items based on user roles
+  const filteredNavItems = React.useMemo(() => {
+    return navItems.filter(item => {
+      // If no roles specified, show to everyone
+      if (!item.roles || item.roles.length === 0) {
+        return true
+      }
+
+      // Show if user has any of the required roles
+      return user?.roles?.some(role => item.roles.includes(role)) || false
+    })
+  }, [user, isLoading])
+
+  const navMain = filteredNavItems.map(({ roles, ...item }) => ({
     ...item,
     isActive: pathname === item.url,
   }))
@@ -97,10 +134,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navMain} />
+        {isLoading ? (
+          <SidebarGroup>
+            <SidebarMenu>
+              {[...Array(6)].map((_, i) => (
+                <SidebarMenuItem key={i}>
+                  <SidebarMenuButton disabled>
+                    <Skeleton className="h-5 w-5" />
+                    <Skeleton className="h-4 w-32" />
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+        ) : (
+          <NavMain items={navMain} />
+        )}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

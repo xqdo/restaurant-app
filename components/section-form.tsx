@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/drawer"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { apiClient } from "@/lib/api/client"
+import { MENU_ENDPOINTS } from "@/lib/api/endpoints"
 
 interface Section {
   id: number
@@ -56,21 +58,12 @@ export function SectionForm({
     setLoading(true)
 
     try {
-      const url = section
-        ? `/api/sections/${section.id}`
-        : "/api/sections"
-      const method = section ? "PATCH" : "POST"
+      const body = { name: name.trim() }
 
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim() }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || "فشلت العملية")
+      if (section) {
+        await apiClient.patch(MENU_ENDPOINTS.sectionById(section.id), body)
+      } else {
+        await apiClient.post(MENU_ENDPOINTS.sections, body)
       }
 
       toast.success(
@@ -90,7 +83,7 @@ export function SectionForm({
     <Drawer
       open={open}
       onOpenChange={onOpenChange}
-      direction={isMobile ? "bottom" : "right"}
+      direction={isMobile ? "bottom" : "left"}
     >
       <DrawerContent>
         <DrawerHeader>

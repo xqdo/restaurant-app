@@ -20,7 +20,7 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 
-type IconComponent = React.ForwardRefExoticComponent<React.RefAttributes<unknown>>
+type IconComponent = React.ComponentType<any>
 
 export function NavMain({
   items,

@@ -22,6 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { apiClient } from "@/lib/api/client"
+import { MENU_ENDPOINTS } from "@/lib/api/endpoints"
 
 interface Section {
   id: number
@@ -121,8 +123,12 @@ export function ItemForm({
     formData.append("file", file)
 
     try {
+      const token = localStorage.getItem('auth-token')
       const response = await fetch("/api/images", {
         method: "POST",
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
         body: formData,
       })
 
@@ -162,9 +168,6 @@ export function ItemForm({
     setLoading(true)
 
     try {
-      const url = item ? `/api/items/${item.id}` : "/api/items"
-      const method = item ? "PATCH" : "POST"
-
       const body: any = {
         name: name.trim(),
         section_id: parseInt(selectedSectionId),
@@ -173,16 +176,10 @@ export function ItemForm({
         image_id: uploadedImageId,
       }
 
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || "فشلت العملية")
+      if (item) {
+        await apiClient.patch(MENU_ENDPOINTS.itemById(item.id), body)
+      } else {
+        await apiClient.post(MENU_ENDPOINTS.items, body)
       }
 
       toast.success(
@@ -201,7 +198,7 @@ export function ItemForm({
     <Drawer
       open={open}
       onOpenChange={onOpenChange}
-      direction={isMobile ? "bottom" : "right"}
+      direction={isMobile ? "bottom" : "left"}
     >
       <DrawerContent>
         <DrawerHeader>

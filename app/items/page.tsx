@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { IconPlus } from "@tabler/icons-react"
 import { toast } from "sonner"
 import { AppSidebar } from "@/components/app-sidebar"
+import { AuthGuard } from "@/components/auth-guard"
 import { ItemForm } from "@/components/item-form"
 import { SectionAccordion } from "@/components/section-accordion"
 import { SectionForm } from "@/components/section-form"
@@ -14,13 +15,15 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
+import { apiClient } from "@/lib/api/client"
+import { MENU_ENDPOINTS } from "@/lib/api/endpoints"
 
 interface Section {
   id: number
   name: string
-  itemCount: number
-  createdAt: string
-  updatedAt: string | null
+  itemCount?: number
+  createdAt?: string
+  updatedAt?: string | null
 }
 
 interface Item {
@@ -32,11 +35,47 @@ interface Item {
   description: string | null
   section: { id: number; name: string }
   image: { id: number; path: string } | null
-  createdAt: string
-  updatedAt: string | null
+  createdAt?: string
+  updatedAt?: string | null
+}
+
+// Backend returns snake_case, transform to camelCase
+interface BackendItem {
+  id: number
+  name: string
+  price: string
+  section_id: number
+  image_id: number | null
+  description: string | null
+  section: { id: number; name: string }
+  image: { id: number; path: string } | null
+  baseEntity?: any
+}
+
+function transformItem(backendItem: BackendItem): Item {
+  return {
+    id: backendItem.id,
+    name: backendItem.name,
+    price: backendItem.price,
+    sectionId: backendItem.section_id,
+    imageId: backendItem.image_id,
+    description: backendItem.description,
+    section: backendItem.section,
+    image: backendItem.image,
+    createdAt: backendItem.baseEntity?.created_at,
+    updatedAt: backendItem.baseEntity?.updated_at,
+  }
 }
 
 export default function ItemsPage() {
+  return (
+    <AuthGuard requiredRoles={['Admin', 'Manager']}>
+      <ItemsPageContent />
+    </AuthGuard>
+  )
+}
+
+function ItemsPageContent() {
   const [sections, setSections] = useState<Section[]>([])
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
@@ -56,20 +95,13 @@ export default function ItemsPage() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [sectionsRes, itemsRes] = await Promise.all([
-        fetch("/api/sections"),
-        fetch("/api/items"),
+      const [sectionsData, itemsData] = await Promise.all([
+        apiClient.get<Section[]>(MENU_ENDPOINTS.sections),
+        apiClient.get<BackendItem[]>(MENU_ENDPOINTS.items),
       ])
 
-      if (!sectionsRes.ok || !itemsRes.ok) {
-        throw new Error("فشل تحميل البيانات")
-      }
-
-      const sectionsData = await sectionsRes.json()
-      const itemsData = await itemsRes.json()
-
-      setSections(sectionsData.data || [])
-      setItems(itemsData.data || [])
+      setSections(sectionsData || [])
+      setItems((itemsData || []).map(transformItem))
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل تحميل البيانات")
     } finally {
@@ -108,15 +140,7 @@ export default function ItemsPage() {
     }
 
     try {
-      const response = await fetch(`/api/sections/${sectionId}`, {
-        method: "DELETE",
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || "فشل حذف القسم")
-      }
-
+      await apiClient.delete(MENU_ENDPOINTS.sectionById(sectionId))
       toast.success("تم حذف القسم بنجاح")
       fetchData()
     } catch (error) {
@@ -143,15 +167,7 @@ export default function ItemsPage() {
     }
 
     try {
-      const response = await fetch(`/api/items/${itemId}`, {
-        method: "DELETE",
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || "فشل حذف المنتج")
-      }
-
+      await apiClient.delete(MENU_ENDPOINTS.itemById(itemId))
       toast.success("تم حذف المنتج بنجاح")
       fetchData()
     } catch (error) {

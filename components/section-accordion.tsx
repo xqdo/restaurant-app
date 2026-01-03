@@ -21,7 +21,9 @@ import {
 interface Section {
   id: number
   name: string
-  itemCount: number
+  itemCount?: number
+  createdAt?: string
+  updatedAt?: string | null
 }
 
 interface Item {
@@ -33,6 +35,8 @@ interface Item {
   description: string | null
   section: { id: number; name: string }
   image: { id: number; path: string } | null
+  createdAt?: string
+  updatedAt?: string | null
 }
 
 interface SectionAccordionProps {

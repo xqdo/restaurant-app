@@ -1,3 +1,24 @@
+/**
+ * ⚠️ DEPRECATED - Phase 0 Migration
+ *
+ * This file contains server-side JWT and password utilities.
+ * With the migration to external backend API (localhost:5000),
+ * these functions are NO LONGER USED.
+ *
+ * The backend now handles:
+ * - Password hashing and verification
+ * - JWT token creation and verification
+ * - All authentication logic
+ *
+ * This file will be REMOVED in Phase 1.
+ * DO NOT use these functions in new code.
+ *
+ * For authentication in the frontend, use:
+ * - /lib/contexts/auth-context.tsx
+ * - /lib/api/client.ts
+ * - /hooks/use-auth.ts
+ */
+
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';

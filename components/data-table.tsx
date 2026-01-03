@@ -572,7 +572,7 @@ export function DataTable({
                 disabled={!table.getCanPreviousPage()}
               >
                 <span className="sr-only">Go to first page</span>
-                <IconChevronsLeft />
+                <IconChevronsRight />
               </Button>
               <Button
                 variant="outline"
@@ -582,7 +582,7 @@ export function DataTable({
                 disabled={!table.getCanPreviousPage()}
               >
                 <span className="sr-only">Go to previous page</span>
-                <IconChevronLeft />
+                <IconChevronRight />
               </Button>
               <Button
                 variant="outline"
@@ -592,7 +592,7 @@ export function DataTable({
                 disabled={!table.getCanNextPage()}
               >
                 <span className="sr-only">Go to next page</span>
-                <IconChevronRight />
+                <IconChevronLeft />
               </Button>
               <Button
                 variant="outline"
@@ -602,7 +602,7 @@ export function DataTable({
                 disabled={!table.getCanNextPage()}
               >
                 <span className="sr-only">Go to last page</span>
-                <IconChevronsRight />
+                <IconChevronsLeft />
               </Button>
             </div>
           </div>
@@ -651,9 +651,9 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   const isMobile = useIsMobile()
 
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"}>
+    <Drawer direction={isMobile ? "bottom" : "left"}>
       <DrawerTrigger asChild>
-        <Button variant="link" className="text-foreground w-fit px-0 text-left">
+        <Button variant="link" className="text-foreground w-fit px-0 text-right">
           {item.header}
         </Button>
       </DrawerTrigger>

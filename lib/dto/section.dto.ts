@@ -6,8 +6,7 @@ import { z } from 'zod'
 export const createSectionDto = z.object({
   name: z
     .string({
-      required_error: 'Section name is required',
-      invalid_type_error: 'Section name must be a string',
+      message: 'Section name must be a string',
     })
     .min(1, 'Section name cannot be empty')
     .max(255, 'Section name cannot exceed 255 characters')
@@ -20,7 +19,7 @@ export const createSectionDto = z.object({
 export const updateSectionDto = z.object({
   name: z
     .string({
-      invalid_type_error: 'Section name must be a string',
+      message: 'Section name must be a string',
     })
     .min(1, 'Section name cannot be empty')
     .max(255, 'Section name cannot exceed 255 characters')
@@ -34,8 +33,7 @@ export const updateSectionDto = z.object({
 export const sectionIdDto = z.object({
   id: z.coerce
     .number({
-      required_error: 'Section ID is required',
-      invalid_type_error: 'Section ID must be a number',
+      message: 'Section ID must be a number',
     })
     .int('Section ID must be an integer')
     .positive('Section ID must be positive'),

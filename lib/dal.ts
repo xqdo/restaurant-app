@@ -1,5 +1,23 @@
+/**
+ * ⚠️ DEPRECATED - Phase 0 Migration
+ *
+ * Data Access Layer for server-side authentication.
+ * With the migration to external backend API, this DAL is NO LONGER USED.
+ *
+ * Old architecture: Next.js API Routes → DAL → Prisma → PostgreSQL
+ * New architecture: Next.js Client → External API (localhost:5000) → Backend DB
+ *
+ * This file will be REMOVED in Phase 1.
+ * DO NOT use these functions in new code.
+ *
+ * For authentication in the frontend, use:
+ * - /lib/contexts/auth-context.tsx (auth state management)
+ * - /lib/api/client.ts (API calls to external backend)
+ * - /hooks/use-auth.ts (auth hook)
+ */
+
 import 'server-only';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { verifyToken } from './auth';
 import { prisma } from './prisma';
 import { cache } from 'react';
@@ -15,8 +33,20 @@ import { cache } from 'react';
  */
 
 export const verifySession = cache(async () => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('auth-token')?.value;
+  // Try to get token from Authorization header first (new auth system)
+  const headersList = await headers();
+  const authHeader = headersList.get('authorization');
+  let token: string | undefined;
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7);
+  }
+
+  // Fallback to cookie (old auth system)
+  if (!token) {
+    const cookieStore = await cookies();
+    token = cookieStore.get('auth-token')?.value;
+  }
 
   if (!token) {
     return { isAuth: false, userId: null, role: null };
@@ -41,15 +71,12 @@ export const getUser = cache(async () => {
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: session.userId },
+    where: { id: parseInt(session.userId) },
     select: {
       id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      role: true,
-      phone: true,
-      avatar: true,
+      fullname: true,
+      username: true,
+      is_active: true,
     },
   });
 
@@ -58,10 +85,10 @@ export const getUser = cache(async () => {
 
 export const requireAuth = async () => {
   const session = await verifySession();
-  if (!session.isAuth) {
+  if (!session.isAuth || !session.userId) {
     throw new Error('Unauthorized');
   }
-  return session;
+  return { ...session, userId: session.userId as string };
 };
 
 export const requireRole = async (allowedRoles: string[]) => {

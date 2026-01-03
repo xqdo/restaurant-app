@@ -9,7 +9,14 @@
       "Bash(findstr:*)",
       "Bash(dir /s \"c:\\Users\\muqta\\workspace\\resturant\\restaurant-app\\app\")",
       "Bash(xargs ls:*)",
-      "Bash(npx prisma generate:*)"
+      "Bash(npx prisma generate:*)",
+      "Bash(wc:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx next build:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

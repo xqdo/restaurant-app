@@ -6,8 +6,7 @@ import { z } from 'zod'
 export const createImageDto = z.object({
   path: z
     .string({
-      required_error: 'Image path is required',
-      invalid_type_error: 'Image path must be a string',
+      message: 'Image path must be a string',
     })
     .min(1, 'Image path cannot be empty')
     .max(255, 'Image path cannot exceed 255 characters')
@@ -20,8 +19,7 @@ export const createImageDto = z.object({
 export const imageIdDto = z.object({
   id: z.coerce
     .number({
-      required_error: 'Image ID is required',
-      invalid_type_error: 'Image ID must be a number',
+      message: 'Image ID must be a number',
     })
     .int('Image ID must be an integer')
     .positive('Image ID must be positive'),
