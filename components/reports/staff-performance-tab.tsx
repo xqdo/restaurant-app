@@ -101,7 +101,7 @@ export function StaffPerformanceTab({ filters }: StaffPerformanceTabProps) {
                         {staff.fullname}
                       </div>
                     </TableCell>
-                    <TableCell>{staff.orders_count.toLocaleString('ar-SA')}</TableCell>
+                    <TableCell>{staff.orders_count.toLocaleString('ar-EN')}</TableCell>
                     <TableCell>{formatCurrency(staff.total_revenue)}</TableCell>
                     <TableCell>{formatCurrency(staff.average_order_value)}</TableCell>
                     <TableCell>

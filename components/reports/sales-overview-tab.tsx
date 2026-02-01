@@ -82,7 +82,7 @@ export function SalesOverviewTab({ filters }: SalesOverviewTabProps) {
 
         <KpiCard
           title="إجمالي الطلبات"
-          value={loading ? '...' : (data?.total_receipts || 0).toLocaleString('ar-SA')}
+          value={loading ? '...' : (data?.total_receipts || 0).toLocaleString('ar-EN')}
           icon={<IconReceipt className="h-4 w-4" />}
           loading={loading}
         />
@@ -124,13 +124,13 @@ export function SalesOverviewTab({ filters }: SalesOverviewTabProps) {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <KpiCard
             title="طلبات محلية (Dine-in)"
-            value={(data.dine_in_orders || 0).toLocaleString('ar-SA')}
+            value={(data.dine_in_orders || 0).toLocaleString('ar-EN')}
             icon={<IconReceipt className="h-4 w-4" />}
           />
 
           <KpiCard
             title="طلبات توصيل (Delivery)"
-            value={(data.delivery_orders || 0).toLocaleString('ar-SA')}
+            value={(data.delivery_orders || 0).toLocaleString('ar-EN')}
             icon={<IconReceipt className="h-4 w-4" />}
           />
         </div>

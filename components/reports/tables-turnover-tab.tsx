@@ -121,7 +121,7 @@ export function TablesTurnoverTab({ filters }: TablesTurnoverTabProps) {
                         </div>
                       </TableCell>
                       <TableCell>{table.section_name || '-'}</TableCell>
-                      <TableCell>{table.orders_count.toLocaleString('ar-SA')}</TableCell>
+                      <TableCell>{table.orders_count.toLocaleString('ar-EN')}</TableCell>
                       <TableCell>{formatCurrency(table.total_revenue)}</TableCell>
                       <TableCell>
                         {formatCurrency(table.average_order_value)}

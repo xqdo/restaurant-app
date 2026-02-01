@@ -6,7 +6,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { IconTag } from '@tabler/icons-react'
+import { IconCheck, IconTag } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAuth } from '@/hooks/use-auth'
@@ -41,11 +41,13 @@ export function OrderDetailDrawer({
   receiptId,
   open,
   onOpenChange,
+  onUpdate,
 }: OrderDetailDrawerProps) {
   const isMobile = useIsMobile()
   const { user } = useAuth()
   const [receipt, setReceipt] = useState<ReceiptDetail | null>(null)
   const [loading, setLoading] = useState(true)
+  const [completing, setCompleting] = useState(false)
   const [applyDiscountOpen, setApplyDiscountOpen] = useState(false)
 
   // Fetch receipt details when drawer opens
@@ -120,6 +122,29 @@ export function OrderDetailDrawer({
   const handleDiscountApplied = () => {
     // Refresh receipt details to show updated discount
     fetchReceiptDetail()
+  }
+
+  const canComplete = (): boolean => {
+    if (!user || !user.roles) return false
+    const allowedRoles = ['Admin', 'Manager', 'Waiter']
+    return user.roles.some(role => allowedRoles.includes(role))
+  }
+
+  const handleCompleteOrder = async () => {
+    if (!receiptId) return
+
+    try {
+      setCompleting(true)
+      await apiClient.put(ORDER_ENDPOINTS.receiptComplete(receiptId))
+      toast.success('تم إكمال الطلب وتحرير الطاولة بنجاح')
+      fetchReceiptDetail()
+      onUpdate?.()
+    } catch (error: any) {
+      toast.error(error?.message || 'فشل إكمال الطلب')
+      console.error('Failed to complete receipt:', error)
+    } finally {
+      setCompleting(false)
+    }
   }
 
   return (
@@ -249,6 +274,21 @@ export function OrderDetailDrawer({
         </div>
 
         <DrawerFooter>
+          {receipt && !receipt.completed_at && canComplete() && (
+            <Button
+              onClick={handleCompleteOrder}
+              disabled={completing}
+              className="w-full"
+            >
+              <IconCheck className="h-4 w-4 ml-2" />
+              {completing ? 'جاري الإكمال...' : 'إكمال الطلب وتحرير الطاولة'}
+            </Button>
+          )}
+          {receipt?.completed_at && (
+            <div className="text-center text-sm text-green-600 font-medium py-2">
+              تم إكمال هذا الطلب
+            </div>
+          )}
           <DrawerClose asChild>
             <Button variant="outline">إغلاق</Button>
           </DrawerClose>

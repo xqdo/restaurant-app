@@ -245,7 +245,7 @@ export function ItemForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="item-price">السعر (ر.س) *</Label>
+              <Label htmlFor="item-price">السعر (د.ع) *</Label>
               <Input
                 id="item-price"
                 type="text"

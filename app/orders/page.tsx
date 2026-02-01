@@ -21,6 +21,8 @@ import type {
   ReceiptListItem,
   ReceiptQueryFilters,
   PaginatedReceiptsResponse,
+  OrderStatus,
+  ReceiptItemStatus,
 } from '@/lib/types/receipt.types'
 
 export default function OrdersPage() {
@@ -35,6 +37,7 @@ function OrdersPageContent() {
   const [receipts, setReceipts] = useState<ReceiptListItem[]>([])
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState<ReceiptQueryFilters>({
+    completed: false,
     page: 1,
     perPage: 10,
   })
@@ -59,6 +62,9 @@ function OrdersPageContent() {
 
       // Build query params
       const params = new URLSearchParams()
+      if (filters.completed !== undefined) {
+        params.append('completed', filters.completed.toString())
+      }
       if (filters.table_id) {
         params.append('table_id', filters.table_id.toString())
       }
@@ -81,11 +87,24 @@ function OrdersPageContent() {
       console.log('Response.data:', response.data)
       console.log('Response.meta:', response.meta)
 
+      // Derive overall order status from item statuses and completed_at
+      const deriveOrderStatus = (backendReceipt: any): OrderStatus => {
+        if (backendReceipt.completed_at) return 'completed'
+
+        const items = backendReceipt.receiptItems || []
+        if (items.length === 0) return 'pending'
+
+        const statuses: ReceiptItemStatus[] = items.map((i: any) => i.status)
+
+        if (statuses.every((s) => s === 'done')) return 'done'
+        if (statuses.some((s) => s === 'ready')) return 'ready'
+        if (statuses.some((s) => s === 'preparing')) return 'preparing'
+        return 'pending'
+      }
+
       // Transform backend data to match ReceiptListItem interface
       const transformReceipt = (backendReceipt: any): ReceiptListItem => {
-        console.log('Transforming receipt:', backendReceipt)
-
-        const transformed = {
+        return {
           id: backendReceipt.id,
           number: backendReceipt.number,
           is_delivery: backendReceipt.is_delivery,
@@ -98,12 +117,10 @@ function OrdersPageContent() {
           } : undefined,
           created_by_name: backendReceipt.baseEntity?.createdByUser?.fullname || 'غير معروف',
           created_at: backendReceipt.baseEntity?.created_at || '',
-          total: '0', // Backend should provide this - needs to be added to API
+          total: '0',
           item_count: (backendReceipt.receiptItems || []).length,
+          order_status: deriveOrderStatus(backendReceipt),
         }
-
-        console.log('Transformed to:', transformed)
-        return transformed
       }
 
       const receiptsData = (response.data || []).map(transformReceipt)
@@ -220,6 +237,7 @@ function OrdersPageContent() {
           receiptId={detailReceiptId}
           open={detailDrawerOpen}
           onOpenChange={setDetailDrawerOpen}
+          onUpdate={fetchReceipts}
         />
       </SidebarInset>
     </SidebarProvider>

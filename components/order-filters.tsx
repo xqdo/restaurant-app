@@ -62,6 +62,7 @@ export function OrderFilters({ filters, onFiltersChange }: OrderFiltersProps) {
 
   const handleClearFilters = () => {
     const clearedFilters: ReceiptQueryFilters = {
+      completed: false,
       page: 1,
       perPage: filters.perPage || 10,
     }
@@ -93,6 +94,43 @@ export function OrderFilters({ filters, onFiltersChange }: OrderFiltersProps) {
             مسح الفلاتر
           </Button>
         )}
+      </div>
+
+      {/* Order Status Tabs */}
+      <div className="flex gap-2">
+        <Button
+          variant={localFilters.completed === false ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => {
+            const updated = { ...localFilters, completed: false, page: 1 }
+            setLocalFilters(updated)
+            onFiltersChange(updated)
+          }}
+        >
+          الطلبات الحالية
+        </Button>
+        <Button
+          variant={localFilters.completed === true ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => {
+            const updated = { ...localFilters, completed: true, page: 1 }
+            setLocalFilters(updated)
+            onFiltersChange(updated)
+          }}
+        >
+          الطلبات المكتملة
+        </Button>
+        <Button
+          variant={localFilters.completed === undefined ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => {
+            const updated = { ...localFilters, completed: undefined, page: 1 }
+            setLocalFilters(updated)
+            onFiltersChange(updated)
+          }}
+        >
+          الكل
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DeliveryBadge } from '@/components/delivery-badge'
+import { OrderStatusBadge } from '@/components/order-status-badge'
 
 interface ReceiptsTableProps {
   receipts: ReceiptListItem[]
@@ -61,6 +62,7 @@ export function ReceiptsTable({
         <TableHeader>
           <TableRow>
             <TableHead className="text-right">رقم الطلب</TableHead>
+            <TableHead className="text-right">الحالة</TableHead>
             <TableHead className="text-right">النوع</TableHead>
             <TableHead className="text-right">الطاولة</TableHead>
             <TableHead className="text-right">التاريخ</TableHead>
@@ -79,6 +81,9 @@ export function ReceiptsTable({
             >
               <TableCell className="font-medium">
                 #{receipt.number || receipt.id}
+              </TableCell>
+              <TableCell>
+                <OrderStatusBadge status={receipt.order_status} />
               </TableCell>
               <TableCell>
                 <DeliveryBadge isDelivery={receipt.is_delivery || false} />

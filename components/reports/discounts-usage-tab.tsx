@@ -114,7 +114,7 @@ export function DiscountsUsageTab({ filters }: DiscountsUsageTabProps) {
                       <TableCell>{discount.name}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          {discount.times_used.toLocaleString('ar-SA')}
+                          {discount.times_used.toLocaleString('ar-EN')}
                           {isHighUsage && (
                             <Badge variant="default" className="text-xs">
                               شائع

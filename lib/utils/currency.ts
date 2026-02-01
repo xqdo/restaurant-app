@@ -5,16 +5,16 @@
 /**
  * Format decimal string to currency display
  * @param value - Decimal string or number from API
- * @returns Formatted string like "25.50 ر.س"
+ * @returns Formatted string like "25.50 د.ع"
  */
 export function formatCurrency(value: string | number): string {
   const num = typeof value === 'string' ? parseFloat(value) : value
 
   if (isNaN(num)) {
-    return '0.00 ر.س'
+    return '0.00 د.ع'
   }
 
-  return `${num.toFixed(2)} ر.س`
+  return `${num.toFixed(2)} د.ع`
 }
 
 /**

@@ -130,7 +130,7 @@ export function TopItemsChart({
               {data.map((item) => (
                 <TableRow key={item.item_id}>
                   <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>{item.quantity_sold.toLocaleString('ar-SA')}</TableCell>
+                  <TableCell>{item.quantity_sold.toLocaleString('ar-EN')}</TableCell>
                   <TableCell>{formatCurrency(item.revenue)}</TableCell>
                   <TableCell>{formatCurrency(item.price)}</TableCell>
                 </TableRow>

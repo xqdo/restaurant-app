@@ -6,6 +6,9 @@
 // Receipt item status enum
 export type ReceiptItemStatus = 'pending' | 'preparing' | 'ready' | 'done'
 
+// Overall order status (derived from item statuses + completed_at)
+export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'done' | 'completed'
+
 // Item in order creation request
 export interface CreateReceiptItemDto {
   item_id: number
@@ -82,10 +85,12 @@ export interface ReceiptListItem {
   created_at: string
   total: string
   item_count: number
+  order_status: OrderStatus
 }
 
 // Query filters for GET /receipts
 export interface ReceiptQueryFilters {
+  completed?: boolean
   is_delivery?: boolean
   table_id?: number
   start_date?: string

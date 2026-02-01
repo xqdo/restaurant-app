@@ -110,10 +110,10 @@ export function RevenueBreakdownTab({ filters }: RevenueBreakdownTabProps) {
                         {section.section_name}
                       </TableCell>
                       <TableCell>
-                        {section.items_count.toLocaleString('ar-SA')}
+                        {section.items_count.toLocaleString('ar-EN')}
                       </TableCell>
                       <TableCell>
-                        {section.total_quantity.toLocaleString('ar-SA')}
+                        {section.total_quantity.toLocaleString('ar-EN')}
                       </TableCell>
                       <TableCell>{formatCurrency(section.total_revenue)}</TableCell>
                       <TableCell>

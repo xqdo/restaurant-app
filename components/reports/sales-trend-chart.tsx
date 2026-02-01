@@ -95,7 +95,7 @@ export function SalesTrendChart({ data, loading }: SalesTrendChartProps) {
               tickMargin={8}
               tickFormatter={(value) => {
                 const date = new Date(value)
-                return date.toLocaleDateString('ar-SA', {
+                return date.toLocaleDateString('ar-EN', {
                   month: 'short',
                   day: 'numeric',
                 })
@@ -105,7 +105,7 @@ export function SalesTrendChart({ data, loading }: SalesTrendChartProps) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => `${value.toLocaleString('ar-SA')} ر.س`}
+              tickFormatter={(value) => `${value.toLocaleString('ar-EN')} د.ع`}
             />
             <ChartTooltip
               content={
