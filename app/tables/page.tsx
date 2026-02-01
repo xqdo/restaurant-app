@@ -16,6 +16,16 @@ import { Button } from '@/components/ui/button'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 export default function TablesPage() {
   return (
@@ -31,6 +41,9 @@ function TablesPageContent() {
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState<'ALL' | TableStatus>('ALL')
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [tableToDelete, setTableToDelete] = useState<Table | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Check if user can manage tables (Manager/Admin)
   const canManage = user?.roles.some(role => ['Admin', 'Manager'].includes(role)) ?? false
@@ -61,15 +74,28 @@ function TablesPageContent() {
     }
   }
 
-  const handleDelete = async (tableId: number) => {
-    if (!confirm('هل أنت متأكد من حذف هذه الطاولة؟')) return
+  const handleDeleteClick = async (tableId: number) => {
+    const table = tables.find(t => t.id === tableId)
+    if (table) {
+      setTableToDelete(table)
+      setDeleteDialogOpen(true)
+    }
+  }
 
+  const confirmDelete = async () => {
+    if (!tableToDelete) return
+
+    setIsDeleting(true)
     try {
-      await apiClient.delete(TABLE_ENDPOINTS.byId(tableId))
+      await apiClient.delete(TABLE_ENDPOINTS.byId(tableToDelete.id))
       toast.success('تم حذف الطاولة')
+      setDeleteDialogOpen(false)
+      setTableToDelete(null)
       fetchTables()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'فشل حذف الطاولة')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -171,7 +197,7 @@ function TablesPageContent() {
             <TableGrid
               tables={filteredTables}
               onStatusChange={handleStatusChange}
-              onDelete={handleDelete}
+              onDelete={handleDeleteClick}
               canManage={canManage}
             />
           )}
@@ -185,6 +211,30 @@ function TablesPageContent() {
             onSuccess={fetchTables}
           />
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent className="text-right">
+            <AlertDialogHeader className="text-right">
+              <AlertDialogTitle className="text-right">تأكيد الحذف</AlertDialogTitle>
+              <AlertDialogDescription className="text-right">
+                هل أنت متأكد من حذف الطاولة رقم {tableToDelete?.number}؟
+                <br />
+                هذا الإجراء لا يمكن التراجع عنه.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="flex-row-reverse gap-2">
+              <AlertDialogCancel disabled={isDeleting}>إلغاء</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {isDeleting ? 'جاري الحذف...' : 'حذف'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SidebarInset>
     </SidebarProvider>
   )

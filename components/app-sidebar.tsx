@@ -33,66 +33,91 @@ import {
 } from "@/components/ui/sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
 
-const navItems = [
+const navSections = [
   {
-    title: "لوحة التحكم",
-    url: "/",
-    icon: IconDashboard,
-    roles: [], // All roles can access
+    title: "الرئيسية",
+    items: [
+      {
+        title: "لوحة التحكم",
+        url: "/",
+        icon: IconDashboard,
+        roles: [], // All roles can access
+      },
+    ],
   },
   {
-    title: "الطاولات",
-    url: "/tables",
-    icon: IconTable,
-    roles: ['Admin', 'Manager', 'Waiter'],
+    title: "العمليات",
+    items: [
+      {
+        title: "الطاولات",
+        url: "/tables",
+        icon: IconTable,
+        roles: ['Admin', 'Manager', 'Waiter'],
+      },
+      {
+        title: "الطلبات",
+        url: "/orders",
+        icon: IconShoppingCart,
+        roles: ['Admin', 'Manager', 'Waiter'],
+      },
+      {
+        title: "المطبخ",
+        url: "/kitchen",
+        icon: IconToolsKitchen2,
+        roles: ['Admin', 'Kitchen'],
+      },
+    ],
   },
   {
-    title: "الطلبات",
-    url: "/orders",
-    icon: IconShoppingCart,
-    roles: ['Admin', 'Manager', 'Waiter'],
+    title: "الإدارة",
+    items: [
+      {
+        title: "الأصناف",
+        url: "/items",
+        icon: IconPackage,
+        roles: ['Admin', 'Manager'],
+      },
+      {
+        title: "الخصومات",
+        url: "/discounts",
+        icon: IconDiscount,
+        roles: ['Admin', 'Manager', 'Cashier'],
+      },
+      {
+        title: "إدارة المستخدمين",
+        url: "/users",
+        icon: IconUsers,
+        roles: ['Admin'],
+      },
+    ],
   },
   {
-    title: "المطبخ",
-    url: "/kitchen",
-    icon: IconToolsKitchen2,
-    roles: ['Admin', 'Kitchen'],
+    title: "الخدمات",
+    items: [
+      {
+        title: "التوصيل",
+        url: "/deliveries",
+        icon: IconTruck,
+        roles: ['Admin', 'Delivery'],
+      },
+    ],
   },
   {
-    title: "الأصناف",
-    url: "/items",
-    icon: IconPackage,
-    roles: ['Admin', 'Manager'],
-  },
-  {
-    title: "الخصومات",
-    url: "/discounts",
-    icon: IconDiscount,
-    roles: ['Admin', 'Manager', 'Cashier'],
-  },
-  {
-    title: "إدارة المستخدمين",
-    url: "/users",
-    icon: IconUsers,
-    roles: ['Admin'],
-  },
-  {
-    title: "التوصيل",
-    url: "/deliveries",
-    icon: IconTruck,
-    roles: ['Admin', 'Delivery'],
-  },
-  {
-    title: "التقارير",
-    url: "/reports",
-    icon: IconReport,
-    roles: ['Admin', 'Manager'],
-  },
-  {
-    title: "سجلات النشاط",
-    url: "/audit",
-    icon: IconHistory,
-    roles: ['Admin'],
+    title: "التقارير والسجلات",
+    items: [
+      {
+        title: "التقارير",
+        url: "/reports",
+        icon: IconReport,
+        roles: ['Admin', 'Manager'],
+      },
+      {
+        title: "سجلات النشاط",
+        url: "/audit",
+        icon: IconHistory,
+        roles: ['Admin'],
+      },
+    ],
   },
 ]
 
@@ -110,23 +135,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   const { user, isLoading } = useAuth()
 
-  // Filter nav items based on user roles
-  const filteredNavItems = React.useMemo(() => {
-    return navItems.filter(item => {
-      // If no roles specified, show to everyone
-      if (!item.roles || item.roles.length === 0) {
-        return true
-      }
+  // Filter nav sections based on user roles
+  const filteredNavSections = React.useMemo(() => {
+    return navSections.map(section => ({
+      ...section,
+      items: section.items.filter(item => {
+        // If no roles specified, show to everyone
+        if (!item.roles || item.roles.length === 0) {
+          return true
+        }
 
-      // Show if user has any of the required roles
-      return user?.roles?.some(role => item.roles.includes(role)) || false
-    })
-  }, [user, isLoading])
-
-  const navMain = filteredNavItems.map(({ roles, ...item }) => ({
-    ...item,
-    isActive: pathname === item.url,
-  }))
+        // Show if user has any of the required roles
+        return user?.roles?.some(role => item.roles.includes(role)) || false
+      }).map(({ roles, ...item }) => ({
+        ...item,
+        isActive: pathname === item.url,
+      })),
+    })).filter(section => section.items.length > 0) // Remove empty sections
+  }, [user, isLoading, pathname])
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -148,7 +174,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenu>
           </SidebarGroup>
         ) : (
-          <NavMain items={navMain} />
+          <NavMain sections={filteredNavSections} />
         )}
       </SidebarContent>
       <SidebarFooter>

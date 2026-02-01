@@ -20,9 +20,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="ar" suppressHydrationWarning>
       <body
         className={`${cairo.variable} antialiased`}
+        dir="rtl"
+        style={{ direction: 'rtl' }}
       >
         <Providers>{children}</Providers>
       </body>

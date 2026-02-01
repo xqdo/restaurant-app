@@ -61,10 +61,10 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-slate-100 dark:bg-slate-900 p-4">
+      <Card className="w-full max-w-md shadow-lg border-t-4 border-t-red-600 dark:border-t-red-500">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
+          <CardTitle className="text-2xl font-bold text-center text-slate-800">
             تسجيل الدخول
           </CardTitle>
           <CardDescription className="text-center">
@@ -105,7 +105,7 @@ function LoginForm() {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-red-600 hover:bg-red-700 text-white"
               disabled={loading}
             >
               {loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
@@ -123,7 +123,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">جاري التحميل...</div>}>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-slate-100 dark:bg-slate-900">جاري التحميل...</div>}>
       <LoginForm />
     </Suspense>
   )

@@ -17,7 +17,7 @@ export function SectionCards() {
         <CardHeader>
           <CardDescription>إجمالي الإيرادات</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            ١٢٬٥٠٠ ريال
+            ١٢٬٥٠٠ IQD
           </CardTitle>
           <CardAction>
             <Badge variant="outline">

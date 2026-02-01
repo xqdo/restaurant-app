@@ -2,17 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { IconX } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { apiClient } from '@/lib/api/client'
@@ -29,7 +27,7 @@ export function TableForm({ open, onOpenChange, onSuccess }: TableFormProps) {
   const [tableNumber, setTableNumber] = useState<string>('')
   const [loading, setLoading] = useState(false)
 
-  // Reset form when drawer opens
+  // Reset form when dialog opens
   useEffect(() => {
     if (open) {
       setTableNumber('')
@@ -62,47 +60,47 @@ export function TableForm({ open, onOpenChange, onSuccess }: TableFormProps) {
   }
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent>
-        <DrawerHeader className="text-right">
-          <DrawerTitle>إضافة طاولة جديدة</DrawerTitle>
-          <DrawerDescription>أدخل رقم الطاولة الجديدة</DrawerDescription>
-        </DrawerHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>إضافة طاولة جديدة</DialogTitle>
+          <DialogDescription>أدخل رقم الطاولة الجديدة</DialogDescription>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
-          <div className="px-4 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="tableNumber">رقم الطاولة *</Label>
-              <Input
-                id="tableNumber"
-                type="number"
-                min="1"
-                step="1"
-                placeholder="مثال: 12"
-                value={tableNumber}
-                onChange={(e) => setTableNumber(e.target.value)}
-                disabled={loading}
-                required
-              />
-              <p className="text-sm text-muted-foreground">
-                أدخل رقم فريد للطاولة (رقم موجب)
-              </p>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="tableNumber">رقم الطاولة *</Label>
+            <Input
+              id="tableNumber"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="مثال: 12"
+              value={tableNumber}
+              onChange={(e) => setTableNumber(e.target.value)}
+              disabled={loading}
+              required
+            />
+            <p className="text-sm text-muted-foreground">
+              أدخل رقم فريد للطاولة (رقم موجب)
+            </p>
           </div>
 
-          <DrawerFooter>
-            <Button type="submit" disabled={loading} className="w-full">
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={loading}
+            >
+              إلغاء
+            </Button>
+            <Button type="submit" disabled={loading}>
               {loading ? 'جاري الإنشاء...' : 'إضافة طاولة'}
             </Button>
-            <DrawerClose asChild>
-              <Button variant="outline" disabled={loading} className="w-full">
-                <IconX className="ml-2 h-4 w-4" />
-                إلغاء
-              </Button>
-            </DrawerClose>
-          </DrawerFooter>
+          </DialogFooter>
         </form>
-      </DrawerContent>
-    </Drawer>
+      </DialogContent>
+    </Dialog>
   )
 }

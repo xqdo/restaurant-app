@@ -104,7 +104,7 @@ export function DriverCard({
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">المبلغ المستحق:</span>
                   <span className="font-semibold text-orange-600">
-                    {stats.unpaid_earnings.toFixed(2)} ريال
+                    {stats.unpaid_earnings.toFixed(2)} IQD
                   </span>
                 </div>
               )}

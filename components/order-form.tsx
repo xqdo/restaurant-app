@@ -6,7 +6,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { IconMinus, IconPlus, IconTrash, IconSearch } from '@tabler/icons-react'
+import { IconMinus, IconPlus, IconTrash, IconSearch, IconTable } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { apiClient } from '@/lib/api/client'
@@ -25,18 +25,12 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Card } from '@/components/ui/card'
+import { TableStatusBadge } from '@/components/table-status-badge'
 
 interface OrderFormProps {
   open: boolean
@@ -105,8 +99,10 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
 
   const fetchAvailableTables = async () => {
     try {
-      const response = await apiClient.get<Table[]>(TABLE_ENDPOINTS.available)
-      setTables(response || [])
+      const response = await apiClient.get<Table[]>(TABLE_ENDPOINTS.tables)
+      // Filter only available tables
+      const availableTables = (response || []).filter(t => t.status === 'AVAILABLE')
+      setTables(availableTables)
     } catch (error) {
       toast.error('فشل تحميل الطاولات المتاحة')
       console.error('Failed to fetch tables:', error)
@@ -274,10 +270,10 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[98vw] max-w-none h-[95vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4">
-          <DialogTitle>طلب جديد</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="w-[98vw] max-w-none h-[95vh] flex flex-col p-0 text-right">
+        <DialogHeader className="px-6 pt-6 pb-4 text-right">
+          <DialogTitle className="text-right">طلب جديد</DialogTitle>
+          <DialogDescription className="text-right">
             اختر نوع الطلب وأضف الأصناف مباشرة
           </DialogDescription>
         </DialogHeader>
@@ -300,22 +296,34 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
                   </TabsList>
 
                   <TabsContent value="dine-in" className="mt-4">
-                    <Select
-                      value={selectedTableId}
-                      onValueChange={setSelectedTableId}
-                      disabled={loading}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر طاولة" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {tables.map(table => (
-                          <SelectItem key={table.id} value={table.id.toString()}>
-                            طاولة {table.number}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">اختر الطاولة</Label>
+                      {tables.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          لا توجد طاولات متاحة
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                          {tables.map(table => (
+                            <Card
+                              key={table.id}
+                              className={`cursor-pointer transition-all hover:shadow-md ${
+                                selectedTableId === table.id.toString()
+                                  ? 'ring-2 ring-primary shadow-md'
+                                  : ''
+                              }`}
+                              onClick={() => setSelectedTableId(table.id.toString())}
+                            >
+                              <div className="p-4 flex flex-col items-center justify-center gap-2">
+                                <IconTable className="h-8 w-8 text-primary" />
+                                <div className="text-xl font-bold">رقم {table.number}</div>
+                                <TableStatusBadge status={table.status} />
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </TabsContent>
 
                   <TabsContent value="delivery" className="mt-4 space-y-3">
@@ -325,12 +333,16 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       placeholder="رقم الهاتف (05xxxxxxxx)"
                       disabled={loading}
+                      dir="rtl"
+                      className="text-right"
                     />
                     <Input
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       placeholder="العنوان"
                       disabled={loading}
+                      dir="rtl"
+                      className="text-right"
                     />
                   </TabsContent>
                 </Tabs>
@@ -342,7 +354,8 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="ابحث عن صنف..."
-                    className="pr-10"
+                    className="pr-10 text-right"
+                    dir="rtl"
                   />
                 </div>
 
@@ -515,9 +528,10 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
                           value={orderNotes}
                           onChange={(e) => setOrderNotes(e.target.value)}
                           placeholder="ملاحظات..."
-                          className="w-full min-h-[60px] px-3 py-2 text-sm rounded-md border border-input bg-background mt-1"
+                          className="w-full min-h-[60px] px-3 py-2 text-sm rounded-md border border-input bg-background mt-1 text-right"
                           disabled={loading}
                           maxLength={500}
+                          dir="rtl"
                         />
                       </div>
                     </>

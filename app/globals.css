@@ -119,8 +119,17 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  /* RTL Layout - Force scrollbar on left */
+  html {
+    direction: rtl;
+  }
+
   body {
     @apply bg-background text-foreground;
+    direction: rtl;
+    overflow-y: scroll;
+    overflow-x: hidden;
   }
 
   /* Active sidebar item with gradient */
@@ -137,8 +146,8 @@
 
   /* Custom scrollbar styling */
   ::-webkit-scrollbar {
-    width: 1px;
-    height: 1px;
+    width: 8px;
+    height: 8px;
   }
 
   ::-webkit-scrollbar-track {
@@ -146,17 +155,23 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.577 0.245 27.325);
-    border-radius: 0px;
+    background: oklch(0.577 0.245 27.325 / 0.5);
+    border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.637 0.237 25.331);
+    background: oklch(0.577 0.245 27.325);
   }
 
   /* Firefox scrollbar */
   * {
     scrollbar-width: thin;
     scrollbar-color: oklch(0.577 0.245 27.325) transparent;
+  }
+
+  /* Force RTL scrollbar on left for all scrollable elements */
+  html[dir="rtl"],
+  body[dir="rtl"] {
+    direction: rtl !important;
   }
 }

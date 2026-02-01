@@ -16,7 +16,8 @@
       "Bash(npx tsc:*)",
       "Bash(npm run build:*)",
       "Bash(npx next build:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(DATABASE_URL=\"file:./prisma/dev.db\" npx prisma generate:*)"
     ]
   }
 }
