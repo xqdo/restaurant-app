@@ -9,6 +9,9 @@ export type ReceiptItemStatus = 'pending' | 'preparing' | 'ready' | 'done'
 // Overall order status (derived from item statuses + completed_at)
 export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'done' | 'completed'
 
+// Order type enum
+export type OrderType = 'local' | 'takeaway' | 'delivery'
+
 // Item in order creation request
 export interface CreateReceiptItemDto {
   item_id: number
@@ -20,6 +23,7 @@ export interface CreateReceiptItemDto {
 export interface CreateReceiptDto {
   is_delivery: boolean
   table_id?: number
+  customer_name?: string
   phone_number?: string
   location?: string
   notes?: string
@@ -59,6 +63,7 @@ export interface ReceiptDetail {
   id: number
   number: number
   is_delivery: boolean
+  customer_name?: string
   phone_number?: string
   location?: string
   table?: TableInfo
@@ -78,6 +83,7 @@ export interface ReceiptListItem {
   id: number
   number: number
   is_delivery: boolean
+  customer_name?: string
   phone_number?: string
   location?: string
   table?: TableInfo

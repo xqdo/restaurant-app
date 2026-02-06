@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 
 interface OrderFiltersProps {
   filters: ReceiptQueryFilters
@@ -138,19 +139,29 @@ export function OrderFilters({ filters, onFiltersChange }: OrderFiltersProps) {
         <div className="space-y-2">
           <Label htmlFor="table-filter">الطاولة</Label>
           <Select
-            value={localFilters.table_id?.toString() || 'all'}
-            onValueChange={(value) =>
-              setLocalFilters({
-                ...localFilters,
-                table_id: value === 'all' ? undefined : parseInt(value),
-              })
+            value={
+              localFilters.table_id === undefined
+                ? 'all'
+                : localFilters.table_id === null
+                ? 'none'
+                : localFilters.table_id.toString()
             }
+            onValueChange={(value) => {
+              if (value === 'all') {
+                setLocalFilters({ ...localFilters, table_id: undefined })
+              } else if (value === 'none') {
+                setLocalFilters({ ...localFilters, table_id: null as any })
+              } else {
+                setLocalFilters({ ...localFilters, table_id: parseInt(value) })
+              }
+            }}
           >
             <SelectTrigger id="table-filter">
               <SelectValue placeholder="جميع الطاولات" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">جميع الطاولات</SelectItem>
+              <SelectItem value="none">بدون طاولة</SelectItem>
               {tables.map((table) => (
                 <SelectItem key={table.id} value={table.id.toString()}>
                   طاولة {table.number}
@@ -192,30 +203,44 @@ export function OrderFilters({ filters, onFiltersChange }: OrderFiltersProps) {
           />
         </div>
 
-        {/* Delivery Filter */}
+        {/* Order Type Filter */}
         <div className="space-y-2">
           <Label>نوع الطلب</Label>
-          <div className="flex items-center space-x-4 space-x-reverse h-10">
+          <RadioGroup
+            value={
+              localFilters.is_delivery === true
+                ? 'delivery'
+                : localFilters.is_delivery === false
+                ? 'local'
+                : 'all'
+            }
+            onValueChange={(value) => {
+              setLocalFilters({
+                ...localFilters,
+                is_delivery: value === 'all' ? undefined : value === 'delivery',
+              })
+            }}
+            className="flex flex-col space-y-2"
+          >
             <div className="flex items-center space-x-2 space-x-reverse">
-              <Checkbox
-                id="delivery-filter"
-                checked={localFilters.is_delivery === true}
-                onCheckedChange={(checked) =>
-                  setLocalFilters({
-                    ...localFilters,
-                    is_delivery:
-                      checked === true ? true : undefined,
-                  })
-                }
-              />
-              <label
-                htmlFor="delivery-filter"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                توصيل فقط
-              </label>
+              <RadioGroupItem value="all" id="all" />
+              <Label htmlFor="all" className="font-normal cursor-pointer">
+                الكل
+              </Label>
             </div>
-          </div>
+            <div className="flex items-center space-x-2 space-x-reverse">
+              <RadioGroupItem value="local" id="local" />
+              <Label htmlFor="local" className="font-normal cursor-pointer">
+                محلي وسفري
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2 space-x-reverse">
+              <RadioGroupItem value="delivery" id="delivery" />
+              <Label htmlFor="delivery" className="font-normal cursor-pointer">
+                توصيل
+              </Label>
+            </div>
+          </RadioGroup>
         </div>
       </div>
 

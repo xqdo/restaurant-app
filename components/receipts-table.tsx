@@ -68,7 +68,6 @@ export function ReceiptsTable({
             <TableHead className="text-right">التاريخ</TableHead>
             <TableHead className="text-right">الموظف</TableHead>
             <TableHead className="text-right">عدد الأصناف</TableHead>
-            <TableHead className="text-right">المجموع</TableHead>
             <TableHead className="text-right">الإجراءات</TableHead>
           </TableRow>
         </TableHeader>
@@ -86,19 +85,23 @@ export function ReceiptsTable({
                 <OrderStatusBadge status={receipt.order_status} />
               </TableCell>
               <TableCell>
-                <DeliveryBadge isDelivery={receipt.is_delivery || false} />
+                <DeliveryBadge
+                  isDelivery={receipt.is_delivery || false}
+                  hasTable={!!receipt.table}
+                />
               </TableCell>
               <TableCell>
-                {receipt.table?.number ? `طاولة ${receipt.table.number}` : '-'}
+                {receipt.is_delivery
+                  ? '-'
+                  : receipt.table?.number
+                    ? `طاولة ${receipt.table.number}`
+                    : 'سفري'}
               </TableCell>
               <TableCell className="text-sm">
                 {receipt.created_at ? formatDateTime(receipt.created_at) : '-'}
               </TableCell>
               <TableCell>{receipt.created_by_name || '-'}</TableCell>
               <TableCell>{receipt.item_count || 0}</TableCell>
-              <TableCell className="font-medium">
-                {receipt.total ? formatCurrency(receipt.total) : formatCurrency('0')}
-              </TableCell>
               <TableCell>
                 <Button
                   variant="ghost"

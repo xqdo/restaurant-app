@@ -1,6 +1,6 @@
 /**
  * API Client for External Backend
- * Handles HTTP requests to http://localhost:5000 with Bearer token authentication
+ * Handles HTTP requests to http://192.168.0.238:5000 with Bearer token authentication
  */
 
 import type { ApiError } from '@/lib/types/auth.types'
@@ -9,7 +9,7 @@ class ApiClient {
   private baseUrl: string
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'
+    this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://192.168.0.238:5000'
   }
 
   /**

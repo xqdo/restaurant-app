@@ -1,6 +1,6 @@
 /**
  * API Endpoint Constants
- * External backend API at http://localhost:5000
+ * External backend API at http://192.168.0.238:5000
  */
 
 export const AUTH_ENDPOINTS = {

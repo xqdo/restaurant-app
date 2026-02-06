@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { apiClient } from '@/lib/api/client'
 import { ORDER_ENDPOINTS, TABLE_ENDPOINTS, MENU_ENDPOINTS } from '@/lib/api/endpoints'
-import type { CreateReceiptDto } from '@/lib/types/receipt.types'
+import type { CreateReceiptDto, OrderType } from '@/lib/types/receipt.types'
 import type { MenuItem, MenuSection } from '@/lib/types/menu.types'
 import { formatCurrency } from '@/lib/utils/currency'
 import { Button } from '@/components/ui/button'
@@ -53,13 +53,14 @@ interface OrderItem {
 export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
 
   // Order type state
-  const [orderType, setOrderType] = useState<'dine-in' | 'delivery'>('dine-in')
+  const [orderType, setOrderType] = useState<OrderType>('local')
 
-  // Dine-in state
+  // Local (dine-in) state
   const [tables, setTables] = useState<Table[]>([])
   const [selectedTableId, setSelectedTableId] = useState<string>('')
 
   // Delivery state
+  const [customerName, setCustomerName] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [location, setLocation] = useState('')
 
@@ -78,7 +79,7 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
   useEffect(() => {
     if (open) {
       fetchMenuData()
-      if (orderType === 'dine-in') {
+      if (orderType === 'local') {
         fetchAvailableTables()
       }
     }
@@ -87,8 +88,9 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
   // Reset form when drawer closes
   useEffect(() => {
     if (!open) {
-      setOrderType('dine-in')
+      setOrderType('local')
       setSelectedTableId('')
+      setCustomerName('')
       setPhoneNumber('')
       setLocation('')
       setOrderItems([])
@@ -207,12 +209,16 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
       return false
     }
 
-    if (orderType === 'dine-in') {
+    if (orderType === 'local') {
       if (!selectedTableId) {
         toast.error('الرجاء اختيار طاولة')
         return false
       }
-    } else {
+    } else if (orderType === 'delivery') {
+      if (!customerName.trim()) {
+        toast.error('اسم العميل مطلوب للتوصيل')
+        return false
+      }
       if (!phoneNumber.trim()) {
         toast.error('رقم الهاتف مطلوب للتوصيل')
         return false
@@ -222,6 +228,7 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
         return false
       }
     }
+    // Take-away requires no additional validation
 
     return true
   }
@@ -246,12 +253,14 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
         notes: orderNotes || undefined,
       }
 
-      if (orderType === 'dine-in') {
+      if (orderType === 'local') {
         createDto.table_id = parseInt(selectedTableId)
-      } else {
+      } else if (orderType === 'delivery') {
+        createDto.customer_name = customerName
         createDto.phone_number = phoneNumber
         createDto.location = location
       }
+      // Take-away sends neither table_id nor delivery info
 
       await apiClient.post(ORDER_ENDPOINTS.receipts, createDto)
 
@@ -287,15 +296,16 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
                 <Tabs
                   value={orderType}
                   onValueChange={(value) =>
-                    setOrderType(value as 'dine-in' | 'delivery')
+                    setOrderType(value as OrderType)
                   }
                 >
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="dine-in">طلب محلي</TabsTrigger>
-                    <TabsTrigger value="delivery">طلب توصيل</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="local">محلي</TabsTrigger>
+                    <TabsTrigger value="takeaway">سفري</TabsTrigger>
+                    <TabsTrigger value="delivery">توصيل</TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="dine-in" className="mt-4">
+                  <TabsContent value="local" className="mt-4" dir="rtl">
                     <div className="space-y-3">
                       <Label className="text-sm font-medium">اختر الطاولة</Label>
                       {tables.length === 0 ? (
@@ -326,7 +336,23 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
                     </div>
                   </TabsContent>
 
+                  <TabsContent value="takeaway" className="mt-4 space-y-3">
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p className="text-sm">طلب سفري - بدون طاولة</p>
+                      <p className="text-xs mt-2">يمكنك إضافة الأصناف مباشرة</p>
+                    </div>
+                  </TabsContent>
+
                   <TabsContent value="delivery" className="mt-4 space-y-3">
+                    <Input
+                      type="text"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      placeholder="اسم العميل"
+                      disabled={loading}
+                      dir="rtl"
+                      className="text-right"
+                    />
                     <Input
                       type="tel"
                       value={phoneNumber}
@@ -346,6 +372,13 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
                     />
                   </TabsContent>
                 </Tabs>
+
+                {/* Section Separator */}
+                <Separator className="my-4" />
+                <div className="space-y-1 mb-3">
+                  <h4 className="text-sm font-semibold">تفاصيل الطلب</h4>
+                  <p className="text-xs text-muted-foreground">اختر الأصناف للطلب</p>
+                </div>
 
                 {/* Search */}
                 <div className="relative">

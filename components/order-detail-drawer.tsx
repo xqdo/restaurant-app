@@ -80,6 +80,7 @@ export function OrderDetailDrawer({
         id: response.id,
         number: response.number,
         is_delivery: response.is_delivery,
+        customer_name: response.customer_name,
         phone_number: response.phone_number,
         location: response.location,
         table: response.table,
@@ -192,7 +193,10 @@ export function OrderDetailDrawer({
               <div className="border rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold">معلومات الطلب</h3>
-                  <DeliveryBadge isDelivery={receipt.is_delivery} />
+                  <DeliveryBadge
+                    isDelivery={receipt.is_delivery}
+                    hasTable={!!receipt.table}
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -201,15 +205,21 @@ export function OrderDetailDrawer({
                     <p className="font-medium">#{receipt.number}</p>
                   </div>
 
-                  {receipt.table && (
+                  {!receipt.is_delivery && (
                     <div>
                       <p className="text-muted-foreground">الطاولة:</p>
-                      <p className="font-medium">طاولة {receipt.table.number}</p>
+                      <p className="font-medium">
+                        {receipt.table?.number ? `طاولة ${receipt.table.number}` : 'سفري'}
+                      </p>
                     </div>
                   )}
 
                   {receipt.is_delivery && (
                     <>
+                      <div>
+                        <p className="text-muted-foreground">اسم العميل:</p>
+                        <p className="font-medium">{receipt.customer_name || '-'}</p>
+                      </div>
                       <div>
                         <p className="text-muted-foreground">رقم الهاتف:</p>
                         <p className="font-medium">{receipt.phone_number || '-'}</p>
