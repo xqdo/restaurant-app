@@ -53,9 +53,10 @@ export function DriverCard({
   return (
     <Card
       className={`relative ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
+      dir="rtl"
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div className="text-xl font-bold truncate">{driver.name}</div>
+        <div className="text-xl font-bold truncate text-right">{driver.name}</div>
         {canManage && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -63,18 +64,18 @@ export function DriverCard({
                 <IconDots className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="text-right" dir="rtl">
+              <DropdownMenuLabel className="text-right">الإجراءات</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleEdit}>
-                <IconEdit className="ml-2 h-4 w-4" />
+              <DropdownMenuItem onClick={handleEdit} className="flex-row-reverse">
+                <IconEdit className="mr-2 h-4 w-4" />
                 تعديل
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={handleDelete}
-                className="text-red-600 focus:text-red-600"
+                className="text-red-600 focus:text-red-600 flex-row-reverse"
               >
-                <IconTrash className="ml-2 h-4 w-4" />
+                <IconTrash className="mr-2 h-4 w-4" />
                 حذف
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -82,30 +83,30 @@ export function DriverCard({
         )}
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
+        <div className="space-y-3 text-right">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <IconPhone className="h-4 w-4" />
             <span>{driver.phone_number}</span>
+            <IconPhone className="h-4 w-4" />
           </div>
 
           {stats && (
             <div className="pt-2 border-t space-y-1.5">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">إجمالي التوصيلات:</span>
                 <span className="font-semibold">{stats.total_deliveries}</span>
+                <span className="text-muted-foreground">إجمالي التوصيلات:</span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">غير مدفوع:</span>
                 <span className="font-semibold text-orange-600">
                   {stats.unpaid_deliveries}
                 </span>
+                <span className="text-muted-foreground">غير مدفوع:</span>
               </div>
               {stats.unpaid_earnings > 0 && (
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">المبلغ المستحق:</span>
                   <span className="font-semibold text-orange-600">
-                    {stats.unpaid_earnings.toFixed(2)} IQD
+                    {stats.unpaid_earnings.toLocaleString('en-US')} د.ع
                   </span>
+                  <span className="text-muted-foreground">المبلغ المستحق:</span>
                 </div>
               )}
             </div>

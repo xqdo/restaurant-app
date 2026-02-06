@@ -148,9 +148,9 @@ export function DriverSettlementView() {
   )
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" dir="rtl">
       {/* Header */}
-      <div>
+      <div className="text-right">
         <h2 className="text-2xl font-bold">التسويات</h2>
         <p className="text-muted-foreground">
           تسوية المدفوعات مع السائقين وتتبع المستحقات
@@ -158,15 +158,15 @@ export function DriverSettlementView() {
       </div>
 
       {/* Driver Selection */}
-      <Card>
-        <CardHeader>
+      <Card dir="rtl">
+        <CardHeader className="text-right">
           <CardTitle>اختر السائق</CardTitle>
           <CardDescription>
             اختر السائق لعرض التوصيلات غير المدفوعة
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
+          <div className="space-y-2 text-right">
             <Label htmlFor="settlementDriver">السائق</Label>
             <Select
               value={selectedDriverId}
@@ -200,13 +200,13 @@ export function DriverSettlementView() {
 
       {/* Summary Card */}
       {selectedDriverId && !loading && (
-        <Card>
-          <CardHeader>
+        <Card dir="rtl">
+          <CardHeader className="text-right">
             <CardTitle>ملخص التسوية</CardTitle>
             <CardDescription>{selectedDriver?.name}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-right">
               <div>
                 <p className="text-sm text-muted-foreground">
                   عدد التوصيلات غير المدفوعة
@@ -228,7 +228,7 @@ export function DriverSettlementView() {
                     disabled={settling}
                     className="w-full"
                   >
-                    <IconChecks className="ml-2 h-4 w-4" />
+                    <IconChecks className="mr-2 h-4 w-4" />
                     {settling ? 'جاري التسوية...' : 'تسوية الكل'}
                   </Button>
                 )}
@@ -261,8 +261,8 @@ export function DriverSettlementView() {
 
       {/* Unpaid Deliveries Table */}
       {!loading && selectedDriverId && unpaidDeliveries.length > 0 && (
-        <Card>
-          <CardHeader>
+        <Card dir="rtl">
+          <CardHeader className="text-right">
             <CardTitle>التوصيلات غير المدفوعة</CardTitle>
             <CardDescription>
               قائمة بجميع التوصيلات التي لم يتم دفعها بعد
@@ -310,7 +310,7 @@ export function DriverSettlementView() {
                             size="sm"
                             onClick={() => handleMarkPaid(delivery.id)}
                           >
-                            <IconCheck className="ml-1 h-4 w-4" />
+                            <IconCheck className="mr-1 h-4 w-4" />
                             تحديد كمدفوع
                           </Button>
                         )}

@@ -138,12 +138,12 @@ export function DeliveryAssignmentForm({
           </DrawerDescription>
         </DrawerHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} dir="rtl">
           <div className="px-4 space-y-4 max-h-[60vh] overflow-y-auto">
             {/* Receipt Selection */}
-            <div className="space-y-2">
+            <div className="space-y-2 text-right">
               <Label htmlFor="receipt">
-                <IconTruck className="inline ml-1 h-4 w-4" />
+                <IconTruck className="inline mr-1 h-4 w-4" />
                 طلب التوصيل *
               </Label>
               <Select
@@ -176,7 +176,7 @@ export function DeliveryAssignmentForm({
 
             {/* Selected Receipt Details */}
             {selectedReceipt && (
-              <div className="p-3 border rounded-lg bg-muted/50 space-y-2">
+              <div className="p-3 border rounded-lg bg-muted/50 space-y-2 text-right">
                 <h4 className="font-semibold text-sm">تفاصيل الطلب:</h4>
                 <div className="text-sm space-y-1">
                   <p>
@@ -200,9 +200,9 @@ export function DeliveryAssignmentForm({
             )}
 
             {/* Driver Selection */}
-            <div className="space-y-2">
+            <div className="space-y-2 text-right">
               <Label htmlFor="driver">
-                <IconUser className="inline ml-1 h-4 w-4" />
+                <IconUser className="inline mr-1 h-4 w-4" />
                 السائق *
               </Label>
               <Select
@@ -249,7 +249,7 @@ export function DeliveryAssignmentForm({
             </Button>
             <DrawerClose asChild>
               <Button variant="outline" disabled={loading} className="w-full">
-                <IconX className="ml-2 h-4 w-4" />
+                <IconX className="mr-2 h-4 w-4" />
                 إلغاء
               </Button>
             </DrawerClose>

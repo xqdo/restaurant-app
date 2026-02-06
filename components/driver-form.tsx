@@ -124,9 +124,9 @@ export function DriverForm({
           </DrawerDescription>
         </DrawerHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} dir="rtl">
           <div className="px-4 space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-2 text-right">
               <Label htmlFor="name">اسم السائق *</Label>
               <Input
                 id="name"
@@ -136,19 +136,23 @@ export function DriverForm({
                 onChange={(e) => setName(e.target.value)}
                 disabled={loading}
                 required
+                dir="rtl"
+                className="text-right"
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 text-right">
               <Label htmlFor="phoneNumber">رقم الهاتف *</Label>
               <Input
                 id="phoneNumber"
                 type="tel"
-                placeholder="مثال: 0512345678"
+                placeholder="مثال: 07858004369"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 disabled={loading}
                 required
+                dir="rtl"
+                className="text-right"
               />
             </div>
           </div>
@@ -165,7 +169,7 @@ export function DriverForm({
             </Button>
             <DrawerClose asChild>
               <Button variant="outline" disabled={loading} className="w-full">
-                <IconX className="ml-2 h-4 w-4" />
+                <IconX className="mr-2 h-4 w-4" />
                 إلغاء
               </Button>
             </DrawerClose>

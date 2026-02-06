@@ -99,10 +99,10 @@ export function DriverList() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" dir="rtl">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="text-right">
           <h2 className="text-2xl font-bold">السائقين</h2>
           <p className="text-muted-foreground">
             إدارة سائقي التوصيل ومتابعة أداءهم
@@ -110,7 +110,7 @@ export function DriverList() {
         </div>
         {canManage && (
           <Button onClick={() => setFormOpen(true)}>
-            <IconPlus className="ml-2 h-4 w-4" />
+            <IconPlus className="mr-2 h-4 w-4" />
             إضافة سائق
           </Button>
         )}
@@ -134,7 +134,7 @@ export function DriverList() {
           </p>
           {canManage && (
             <Button onClick={() => setFormOpen(true)} className="mt-4">
-              <IconPlus className="ml-2 h-4 w-4" />
+              <IconPlus className="mr-2 h-4 w-4" />
               إضافة أول سائق
             </Button>
           )}

@@ -5,16 +5,22 @@
 /**
  * Format decimal string to currency display
  * @param value - Decimal string or number from API
- * @returns Formatted string like "25.50 د.ع"
+ * @returns Formatted string like "49,100 د.ع" (integer with thousands separator)
  */
 export function formatCurrency(value: string | number): string {
   const num = typeof value === 'string' ? parseFloat(value) : value
 
   if (isNaN(num)) {
-    return '0.00 د.ع'
+    return '0 د.ع'
   }
 
-  return `${num.toFixed(2)} د.ع`
+  // Round to integer
+  const intValue = Math.round(num)
+
+  // Format with Arabic-English locale (ar-EN) - thousands separator
+  const formatted = intValue.toLocaleString('en-US')
+
+  return `${formatted} د.ع`
 }
 
 /**

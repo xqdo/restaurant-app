@@ -34,9 +34,9 @@ function DeliveriesPageContent() {
       <SidebarInset>
         <SiteHeader />
 
-        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6" dir="rtl">
           {/* Header */}
-          <div>
+          <div className="text-right">
             <h1 className="text-3xl font-bold">التوصيل</h1>
             <p className="text-muted-foreground mt-1">
               إدارة السائقين وطلبات التوصيل والتسويات
@@ -45,7 +45,7 @@ function DeliveriesPageContent() {
 
           {/* Tabs Navigation */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full sm:w-auto">
+            <TabsList className="w-full sm:w-auto" dir="rtl">
               <TabsTrigger value="drivers">السائقين</TabsTrigger>
               <TabsTrigger value="deliveries">طلبات التوصيل</TabsTrigger>
               <TabsTrigger value="settlements">التسويات</TabsTrigger>

@@ -135,10 +135,10 @@ export function DeliveryReceiptsList() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" dir="rtl">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="text-right">
           <h2 className="text-2xl font-bold">طلبات التوصيل</h2>
           <p className="text-muted-foreground">
             إدارة طلبات التوصيل وتتبع حالتها
@@ -146,7 +146,7 @@ export function DeliveryReceiptsList() {
         </div>
         {canManage && (
           <Button onClick={() => setAssignFormOpen(true)}>
-            <IconTruck className="ml-2 h-4 w-4" />
+            <IconTruck className="mr-2 h-4 w-4" />
             تعيين سائق
           </Button>
         )}
@@ -154,7 +154,7 @@ export function DeliveryReceiptsList() {
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4 items-end">
-        <div className="space-y-2 flex-1">
+        <div className="space-y-2 flex-1 text-right">
           <Label htmlFor="driverFilter">السائق</Label>
           <Select value={driverFilter} onValueChange={setDriverFilter}>
             <SelectTrigger id="driverFilter">
@@ -171,13 +171,13 @@ export function DeliveryReceiptsList() {
           </Select>
         </div>
 
-        <div className="space-y-2 flex-1">
+        <div className="space-y-2 flex-1 text-right">
           <Label htmlFor="paymentFilter">حالة الدفع</Label>
           <Select value={paymentFilter} onValueChange={setPaymentFilter}>
             <SelectTrigger id="paymentFilter">
               <SelectValue placeholder="الكل" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent dir="rtl" className="text-right">
               <SelectItem value="all">الكل</SelectItem>
               <SelectItem value="paid">مدفوع</SelectItem>
               <SelectItem value="unpaid">غير مدفوع</SelectItem>
@@ -191,7 +191,7 @@ export function DeliveryReceiptsList() {
             onClick={handleResetFilters}
             className="flex-shrink-0"
           >
-            <IconRefresh className="ml-2 h-4 w-4" />
+            <IconRefresh className="mr-2 h-4 w-4" />
             إعادة تعيين
           </Button>
         )}
@@ -263,12 +263,12 @@ export function DeliveryReceiptsList() {
                   <TableCell>
                     {delivery.is_paid ? (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        <IconCheck className="ml-1 h-3 w-3" />
+                        <IconCheck className="mr-1 h-3 w-3" />
                         مدفوع
                       </span>
                     ) : (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                        <IconX className="ml-1 h-3 w-3" />
+                        <IconX className="mr-1 h-3 w-3" />
                         غير مدفوع
                       </span>
                     )}

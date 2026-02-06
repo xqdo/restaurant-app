@@ -62,14 +62,14 @@ export function TableCard({
                 <IconDots className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="text-right" dir="rtl">
+              <DropdownMenuLabel className="text-right">الإجراءات</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={handleDelete}
-                className="text-red-600 focus:text-red-600"
+                className="text-red-600 focus:text-red-600 flex-row-reverse"
               >
-                <IconTrash className="ml-2 h-4 w-4" />
+                <IconTrash className="mr-2 h-4 w-4" />
                 حذف الطاولة
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -85,16 +85,16 @@ export function TableCard({
                 <TableStatusBadge status={table.status} />
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuLabel>تغيير الحالة</DropdownMenuLabel>
+            <DropdownMenuContent align="start" className="text-right" dir="rtl">
+              <DropdownMenuLabel className="text-right">تغيير الحالة</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleStatusClick('AVAILABLE')}>
+              <DropdownMenuItem onClick={() => handleStatusClick('AVAILABLE')} className="text-right">
                 🟢 متاح
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusClick('OCCUPIED')}>
+              <DropdownMenuItem onClick={() => handleStatusClick('OCCUPIED')} className="text-right">
                 🔴 مشغول
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusClick('RESERVED')}>
+              <DropdownMenuItem onClick={() => handleStatusClick('RESERVED')} className="text-right">
                 🟡 محجوز
               </DropdownMenuItem>
             </DropdownMenuContent>
