@@ -25,10 +25,12 @@ import {
 import { apiClient } from '@/lib/api/client'
 import { STORAGE_ENDPOINTS } from '@/lib/api/endpoints'
 import { type StorageItem, UNIT_LABELS } from '@/lib/types/storage.types'
+import { type Vendor } from '@/lib/types/vendor.types'
 import { formatDateForAPI } from '@/lib/utils/date'
 
 interface StorageEntryFormProps {
   storageItems: StorageItem[]
+  vendors: Vendor[]
   preselectedItemId?: number
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -37,6 +39,7 @@ interface StorageEntryFormProps {
 
 export function StorageEntryForm({
   storageItems,
+  vendors,
   preselectedItemId,
   open,
   onOpenChange,
@@ -46,7 +49,7 @@ export function StorageEntryForm({
   const [storageItemId, setStorageItemId] = useState<string>('')
   const [quantity, setQuantity] = useState('')
   const [unitPrice, setUnitPrice] = useState('')
-  const [supplier, setSupplier] = useState('')
+  const [vendorId, setVendorId] = useState<string>('')
   const [notes, setNotes] = useState('')
   const [entryDate, setEntryDate] = useState('')
   const [loading, setLoading] = useState(false)
@@ -56,7 +59,7 @@ export function StorageEntryForm({
       setStorageItemId(preselectedItemId?.toString() || '')
       setQuantity('')
       setUnitPrice('')
-      setSupplier('')
+      setVendorId('')
       setNotes('')
       setEntryDate(formatDateForAPI(new Date()))
     }
@@ -84,7 +87,7 @@ export function StorageEntryForm({
         storage_item_id: parseInt(storageItemId),
         quantity: parseFloat(quantity),
         unit_price: unitPrice ? parseFloat(unitPrice) : undefined,
-        supplier: supplier.trim() || undefined,
+        vendor_id: vendorId ? parseInt(vendorId) : undefined,
         notes: notes.trim() || undefined,
         entry_date: entryDate ? new Date(entryDate).toISOString() : undefined,
       }
@@ -167,14 +170,23 @@ export function StorageEntryForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="entry-supplier">المورد</Label>
-              <Input
-                id="entry-supplier"
-                value={supplier}
-                onChange={(e) => setSupplier(e.target.value)}
-                placeholder="اسم المورد (اختياري)"
+              <Label htmlFor="entry-vendor">المورد</Label>
+              <Select
+                value={vendorId}
+                onValueChange={setVendorId}
                 disabled={loading}
-              />
+              >
+                <SelectTrigger id="entry-vendor">
+                  <SelectValue placeholder="اختر المورد (اختياري)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {vendors.map((vendor) => (
+                    <SelectItem key={vendor.id} value={vendor.id.toString()}>
+                      {vendor.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

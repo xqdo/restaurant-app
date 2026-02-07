@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from "next-themes"
 import { AuthProvider } from "@/lib/contexts/auth-context"
+import { Toaster } from "@/components/ui/sonner"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -14,6 +15,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         storageKey="restaurant-theme"
       >
         {children}
+        <Toaster position="top-center" dir="rtl" />
       </ThemeProvider>
     </AuthProvider>
   )

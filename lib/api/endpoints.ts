@@ -77,6 +77,11 @@ export const STORAGE_ENDPOINTS = {
   usageById: (id: number) => `/storage/usages/${id}`,
 } as const
 
+export const VENDOR_ENDPOINTS = {
+  vendors: '/vendors',
+  vendorById: (id: number) => `/vendors/${id}`,
+} as const
+
 export const AUDIT_ENDPOINTS = {
   logs: '/audit/logs',
   userLogs: (userId: number) => `/audit/logs/user/${userId}`,

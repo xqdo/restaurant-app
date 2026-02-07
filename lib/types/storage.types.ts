@@ -36,6 +36,8 @@ export interface StorageItem {
   unit: UnitOfMeasurement
   current_quantity: string // Decimal as string
   min_quantity?: string | null // Decimal as string
+  vendor_id?: number | null
+  vendor?: { id: number; name: string; phone?: string | null } | null
   base_entity_id: number
   baseEntity?: {
     created_at: string
@@ -52,6 +54,8 @@ export interface StorageEntry {
   quantity: string // Decimal as string
   unit_price?: string | null // Decimal as string
   supplier?: string | null
+  vendor_id?: number | null
+  vendor?: { id: number; name: string; phone?: string | null } | null
   notes?: string | null
   entry_date: string
   base_entity_id: number
@@ -86,6 +90,7 @@ export interface CreateStorageItemDto {
   description?: string
   unit: UnitOfMeasurement
   min_quantity?: number
+  vendor_id?: number
 }
 
 export interface UpdateStorageItemDto {
@@ -93,6 +98,7 @@ export interface UpdateStorageItemDto {
   description?: string
   unit?: UnitOfMeasurement
   min_quantity?: number
+  vendor_id?: number
 }
 
 export interface CreateStorageEntryDto {

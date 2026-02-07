@@ -10,14 +10,14 @@ import { Button } from '@/components/ui/button'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { StorageItemsTab } from '@/components/storage/storage-items-tab'
-import { StorageEntriesTab } from '@/components/storage/storage-entries-tab'
-import { StorageUsagesTab } from '@/components/storage/storage-usages-tab'
+import { StorageMovementsTab } from '@/components/storage/storage-movements-tab'
 import { StorageItemForm } from '@/components/storage/storage-item-form'
 import { StorageEntryForm } from '@/components/storage/storage-entry-form'
 import { StorageUsageForm } from '@/components/storage/storage-usage-form'
 import { apiClient } from '@/lib/api/client'
-import { STORAGE_ENDPOINTS } from '@/lib/api/endpoints'
+import { STORAGE_ENDPOINTS, VENDOR_ENDPOINTS } from '@/lib/api/endpoints'
 import { type StorageItem, type StorageEntry, type StorageUsage } from '@/lib/types/storage.types'
+import { type Vendor } from '@/lib/types/vendor.types'
 
 export interface EntryFilters {
   storage_item_id?: number
@@ -54,6 +54,7 @@ function InventoryPageContent() {
   const [items, setItems] = useState<StorageItem[]>([])
   const [entries, setEntries] = useState<StorageEntry[]>([])
   const [usages, setUsages] = useState<StorageUsage[]>([])
+  const [vendors, setVendors] = useState<Vendor[]>([])
   const [loadingItems, setLoadingItems] = useState(true)
   const [loadingEntries, setLoadingEntries] = useState(true)
   const [loadingUsages, setLoadingUsages] = useState(true)
@@ -101,6 +102,16 @@ function InventoryPageContent() {
     }
   }, [])
 
+  // Fetch vendors
+  const fetchVendors = useCallback(async () => {
+    try {
+      const data = await apiClient.get<Vendor[]>(VENDOR_ENDPOINTS.vendors)
+      setVendors(data || [])
+    } catch (error) {
+      // Silent fail - vendors are optional
+    }
+  }, [])
+
   // Fetch usages (with filters)
   const fetchUsages = useCallback(async (filters?: UsageFilters) => {
     try {
@@ -123,12 +134,14 @@ function InventoryPageContent() {
     fetchItems()
     fetchEntries()
     fetchUsages()
-  }, [fetchItems, fetchEntries, fetchUsages])
+    fetchVendors()
+  }, [fetchItems, fetchEntries, fetchUsages, fetchVendors])
 
   const refreshAll = () => {
     fetchItems(itemSearch)
     fetchEntries(entryFilters)
     fetchUsages(usageFilters)
+    fetchVendors()
   }
 
   // Filter handlers
@@ -247,8 +260,7 @@ function InventoryPageContent() {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="w-full sm:w-auto" dir="rtl">
               <TabsTrigger value="items">المواد</TabsTrigger>
-              <TabsTrigger value="entries">الإدخالات</TabsTrigger>
-              <TabsTrigger value="usages">الصرف</TabsTrigger>
+              <TabsTrigger value="movements">الحركات</TabsTrigger>
             </TabsList>
 
             <TabsContent value="items" className="mt-4">
@@ -263,25 +275,19 @@ function InventoryPageContent() {
               />
             </TabsContent>
 
-            <TabsContent value="entries" className="mt-4">
-              <StorageEntriesTab
+            <TabsContent value="movements" className="mt-4">
+              <StorageMovementsTab
                 entries={entries}
-                storageItems={items}
-                loading={loadingEntries}
-                onDelete={handleDeleteEntry}
-                onFiltersChange={handleEntryFiltersChange}
-                onAddEntry={() => handleAddEntry()}
-              />
-            </TabsContent>
-
-            <TabsContent value="usages" className="mt-4">
-              <StorageUsagesTab
                 usages={usages}
                 storageItems={items}
-                loading={loadingUsages}
-                onDelete={handleDeleteUsage}
-                onFiltersChange={handleUsageFiltersChange}
+                loadingEntries={loadingEntries}
+                loadingUsages={loadingUsages}
+                onDeleteEntry={handleDeleteEntry}
+                onDeleteUsage={handleDeleteUsage}
+                onAddEntry={() => handleAddEntry()}
                 onAddUsage={() => handleAddUsage()}
+                onEntryFiltersChange={handleEntryFiltersChange}
+                onUsageFiltersChange={handleUsageFiltersChange}
               />
             </TabsContent>
           </Tabs>
@@ -290,6 +296,7 @@ function InventoryPageContent() {
         {/* Forms */}
         <StorageItemForm
           item={editingItem}
+          vendors={vendors}
           open={itemFormOpen}
           onOpenChange={setItemFormOpen}
           onSuccess={refreshAll}
@@ -297,6 +304,7 @@ function InventoryPageContent() {
 
         <StorageEntryForm
           storageItems={items}
+          vendors={vendors}
           preselectedItemId={preselectedItemId}
           open={entryFormOpen}
           onOpenChange={handleEntryOpenChange}

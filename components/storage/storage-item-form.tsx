@@ -25,9 +25,11 @@ import {
 import { apiClient } from '@/lib/api/client'
 import { STORAGE_ENDPOINTS } from '@/lib/api/endpoints'
 import { type StorageItem, type UnitOfMeasurement, UNIT_LABELS } from '@/lib/types/storage.types'
+import { type Vendor } from '@/lib/types/vendor.types'
 
 interface StorageItemFormProps {
   item?: StorageItem | null
+  vendors: Vendor[]
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess: () => void
@@ -35,12 +37,13 @@ interface StorageItemFormProps {
 
 const UNITS: UnitOfMeasurement[] = ['kg', 'g', 'liter', 'ml', 'piece', 'pack', 'box']
 
-export function StorageItemForm({ item, open, onOpenChange, onSuccess }: StorageItemFormProps) {
+export function StorageItemForm({ item, vendors, open, onOpenChange, onSuccess }: StorageItemFormProps) {
   const isMobile = useIsMobile()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [unit, setUnit] = useState<string>('')
   const [minQuantity, setMinQuantity] = useState('')
+  const [vendorId, setVendorId] = useState<string>('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -50,11 +53,13 @@ export function StorageItemForm({ item, open, onOpenChange, onSuccess }: Storage
         setDescription(item.description || '')
         setUnit(item.unit)
         setMinQuantity(item.min_quantity ? String(Number(item.min_quantity)) : '')
+        setVendorId(item.vendor_id ? item.vendor_id.toString() : '')
       } else {
         setName('')
         setDescription('')
         setUnit('')
         setMinQuantity('')
+        setVendorId('')
       }
     }
   }, [item, open])
@@ -80,6 +85,7 @@ export function StorageItemForm({ item, open, onOpenChange, onSuccess }: Storage
         unit,
         description: description.trim() || undefined,
         min_quantity: minQuantity ? parseFloat(minQuantity) : undefined,
+        vendor_id: vendorId ? parseInt(vendorId) : undefined,
       }
 
       if (item) {
@@ -151,6 +157,22 @@ export function StorageItemForm({ item, open, onOpenChange, onSuccess }: Storage
                 placeholder="اختياري - للتنبيه عند انخفاض المخزون"
                 disabled={loading}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="storage-item-vendor">المورد</Label>
+              <Select value={vendorId} onValueChange={setVendorId} disabled={loading}>
+                <SelectTrigger id="storage-item-vendor">
+                  <SelectValue placeholder="اختر المورد (اختياري)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {vendors.map((vendor) => (
+                    <SelectItem key={vendor.id} value={vendor.id.toString()}>
+                      {vendor.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

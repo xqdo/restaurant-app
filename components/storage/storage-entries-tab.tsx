@@ -138,7 +138,7 @@ export function StorageEntriesTab({
                 <TableCell className="text-right">
                   {entry.unit_price ? formatCurrency(entry.unit_price) : '—'}
                 </TableCell>
-                <TableCell className="text-right">{entry.supplier || '—'}</TableCell>
+                <TableCell className="text-right">{entry.vendor?.name || entry.supplier || '—'}</TableCell>
                 <TableCell className="text-right text-sm text-muted-foreground">
                   {entry.notes || '—'}
                 </TableCell>

@@ -15,6 +15,7 @@ import {
   IconToolsKitchen2,
   IconHistory,
   IconBoxMultiple,
+  IconTruckDelivery,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -78,12 +79,6 @@ const navSections = [
         roles: ['Admin', 'Manager'],
       },
       {
-        title: "المخزون",
-        url: "/inventory",
-        icon: IconBoxMultiple,
-        roles: ['Admin', 'Manager'],
-      },
-      {
         title: "إدارة المستخدمين",
         url: "/users",
         icon: IconUsers,
@@ -91,6 +86,7 @@ const navSections = [
       },
     ],
   },
+
   {
     title: "الخدمات",
     items: [
@@ -102,6 +98,24 @@ const navSections = [
       },
     ],
   },
+  {
+    title: "المخزون",
+    items: [
+      {
+        title: "المخزون",
+        url: "/inventory",
+        icon: IconBoxMultiple,
+        roles: ['Admin', 'Manager'],
+      },
+      {
+        title: "الموردون",
+        url: "/vendors",
+        icon: IconTruckDelivery,
+        roles: ['Admin', 'Manager'],
+      },
+    ],
+  },
+
   {
     title: "التقارير والسجلات",
     items: [

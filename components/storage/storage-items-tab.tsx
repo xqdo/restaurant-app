@@ -133,6 +133,11 @@ export function StorageItemsTab({
                           {item.description}
                         </p>
                       )}
+                      {item.vendor && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          المورد: {item.vendor.name}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <DropdownMenu dir="rtl">
