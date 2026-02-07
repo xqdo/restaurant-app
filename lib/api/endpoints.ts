@@ -65,6 +65,11 @@ export const REPORTS_ENDPOINTS = {
   revenueBySection: '/reports/revenue/by-section',
   staffPerformance: '/reports/staff/performance',
   tableTurnover: '/reports/tables/turnover',
+  inventoryStatus: '/reports/inventory/status',
+  inventoryMovement: '/reports/inventory/movement',
+  inventoryPurchases: '/reports/inventory/purchases',
+  inventoryWaste: '/reports/inventory/waste',
+  vendorPerformance: '/reports/vendors/performance',
 } as const
 
 export const STORAGE_ENDPOINTS = {

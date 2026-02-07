@@ -47,7 +47,6 @@ function DeliveriesPageContent() {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="w-full sm:w-auto" dir="rtl">
               <TabsTrigger value="drivers">السائقين</TabsTrigger>
-              <TabsTrigger value="deliveries">طلبات التوصيل</TabsTrigger>
               <TabsTrigger value="settlements">التسويات</TabsTrigger>
             </TabsList>
 

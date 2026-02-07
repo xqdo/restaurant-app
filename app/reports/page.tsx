@@ -6,6 +6,8 @@ import { AppSidebar } from '@/components/app-sidebar'
 import { AuthGuard } from '@/components/auth-guard'
 import { SiteHeader } from '@/components/site-header'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { InventoryReportsSection } from '@/components/reports/inventory-reports-section'
 import { type ReportFilters as ReportFiltersType, type ReportSummary as ReportSummaryType, type OrderTypeSummary } from '@/lib/types/report.types'
 import { ReportFilters, calculateDateRange } from '@/components/reports/report-filters'
 import { ReportSummary } from '@/components/reports/report-summary'
@@ -189,13 +191,13 @@ function ReportsPageContent() {
           <div className="text-right no-print">
             <h1 className="text-3xl font-bold">التقارير</h1>
             <p className="text-muted-foreground mt-1">
-              تقرير الفواتير والمبيعات
+              تقارير المبيعات والمخزون
             </p>
           </div>
 
           {/* Print Header - only visible when printing */}
           <div className="hidden print:block text-right mb-4">
-            <h1 className="text-2xl font-bold">تقرير الفواتير</h1>
+            <h1 className="text-2xl font-bold">تقرير</h1>
             <p className="text-sm text-gray-600">
               {filters.period === 'today' && 'اليوم'}
               {filters.period === 'yesterday' && 'أمس'}
@@ -205,14 +207,28 @@ function ReportsPageContent() {
             </p>
           </div>
 
-          {/* Filters */}
-          <ReportFilters filters={filters} onFiltersChange={setFilters} />
+          {/* Top-level Tabs: Sales / Inventory */}
+          <Tabs defaultValue="sales">
+            <TabsList className="no-print">
+              <TabsTrigger value="sales">تقارير المبيعات</TabsTrigger>
+              <TabsTrigger value="inventory">تقارير المخزون</TabsTrigger>
+            </TabsList>
 
-          {/* Summary Card */}
-          <ReportSummary summary={summary} loading={loading} />
+            <TabsContent value="sales" className="space-y-4">
+              {/* Filters */}
+              <ReportFilters filters={filters} onFiltersChange={setFilters} />
 
-          {/* Receipts Table */}
-          <ReportReceiptsTable receipts={receipts} loading={loading} />
+              {/* Summary Card */}
+              <ReportSummary summary={summary} loading={loading} />
+
+              {/* Receipts Table */}
+              <ReportReceiptsTable receipts={receipts} loading={loading} />
+            </TabsContent>
+
+            <TabsContent value="inventory">
+              <InventoryReportsSection />
+            </TabsContent>
+          </Tabs>
         </div>
       </SidebarInset>
     </SidebarProvider>

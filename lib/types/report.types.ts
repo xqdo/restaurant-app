@@ -158,3 +158,101 @@ export interface ReportSummary {
   unpaidRevenue: number
   byOrderType: OrderTypeSummary[]
 }
+
+// --- Inventory & Vendor Reports ---
+
+// Inventory Status Report (GET /reports/inventory/status)
+export interface InventoryStatusItemDto {
+  item_id: number
+  name: string
+  unit: string
+  current_quantity: number
+  min_quantity?: number | null
+  status: 'ok' | 'low' | 'out'
+  vendor_name?: string | null
+}
+
+export interface InventoryStatusReportDto {
+  items: InventoryStatusItemDto[]
+  total_items: number
+  low_stock_count: number
+  out_of_stock_count: number
+}
+
+// Stock Movement Report (GET /reports/inventory/movement)
+export interface StockMovementItemDto {
+  item_id: number
+  name: string
+  unit: string
+  total_entries_qty: number
+  entries_count: number
+  total_usages_qty: number
+  usages_count: number
+  net_change: number
+}
+
+export interface StockMovementReportDto {
+  items: StockMovementItemDto[]
+  total_received: number
+  total_consumed: number
+  start_date: string
+  end_date: string
+}
+
+// Purchase Cost Report (GET /reports/inventory/purchases)
+export interface PurchaseCostItemDto {
+  item_id: number
+  name: string
+  unit: string
+  total_quantity: number
+  total_cost: number
+  average_unit_cost: number
+  entries_count: number
+}
+
+export interface PurchaseCostReportDto {
+  items: PurchaseCostItemDto[]
+  grand_total: number
+  start_date: string
+  end_date: string
+}
+
+// Waste Report (GET /reports/inventory/waste)
+export interface WasteReportItemDto {
+  item_id: number
+  name: string
+  unit: string
+  waste_qty: number
+  waste_count: number
+  expired_qty: number
+  expired_count: number
+  total_loss: number
+}
+
+export interface WasteReportDto {
+  items: WasteReportItemDto[]
+  total_waste_qty: number
+  total_expired_qty: number
+  total_loss: number
+  start_date: string
+  end_date: string
+}
+
+// Vendor Performance Report (GET /reports/vendors/performance)
+export interface VendorPerformanceItemDto {
+  vendor_id: number
+  name: string
+  phone?: string | null
+  total_quantity: number
+  total_cost: number
+  unique_items_count: number
+  entries_count: number
+  average_cost_per_entry: number
+}
+
+export interface VendorPerformanceReportDto {
+  vendors: VendorPerformanceItemDto[]
+  grand_total: number
+  start_date: string
+  end_date: string
+}
