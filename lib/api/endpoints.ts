@@ -67,6 +67,16 @@ export const REPORTS_ENDPOINTS = {
   tableTurnover: '/reports/tables/turnover',
 } as const
 
+export const STORAGE_ENDPOINTS = {
+  items: '/storage/items',
+  itemById: (id: number) => `/storage/items/${id}`,
+  lowStock: '/storage/items/low-stock',
+  entries: '/storage/entries',
+  entryById: (id: number) => `/storage/entries/${id}`,
+  usages: '/storage/usages',
+  usageById: (id: number) => `/storage/usages/${id}`,
+} as const
+
 export const AUDIT_ENDPOINTS = {
   logs: '/audit/logs',
   userLogs: (userId: number) => `/audit/logs/user/${userId}`,

@@ -22,6 +22,7 @@ const pageNames: Record<string, string> = {
   "/users": "إدارة المستخدمين",
   "/deliveries": "التوصيل",
   "/reports": "التقارير",
+  "/inventory": "المخزون",
 }
 
 export function SiteHeader() {

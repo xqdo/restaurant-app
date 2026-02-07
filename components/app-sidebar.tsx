@@ -14,6 +14,7 @@ import {
   IconInnerShadowTop,
   IconToolsKitchen2,
   IconHistory,
+  IconBoxMultiple,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -74,6 +75,12 @@ const navSections = [
         title: "الأصناف",
         url: "/items",
         icon: IconPackage,
+        roles: ['Admin', 'Manager'],
+      },
+      {
+        title: "المخزون",
+        url: "/inventory",
+        icon: IconBoxMultiple,
         roles: ['Admin', 'Manager'],
       },
       {
