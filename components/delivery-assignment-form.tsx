@@ -74,15 +74,31 @@ export function DeliveryAssignmentForm({
       setDrivers(driversData.filter((d) => !d.isdeleted))
 
       // Fetch unassigned delivery receipts
-      // Note: This assumes the backend filters by is_delivery=true and unassigned
-      // You may need to adjust the query parameters based on your API
-      const receiptsData = await apiClient.get<ReceiptListItem[]>(
-        `${ORDER_ENDPOINTS.receipts}?is_delivery=true&perPage=100`
+      const receiptsResponse = await apiClient.get<any>(
+        `${ORDER_ENDPOINTS.receipts}?is_delivery=true&completed=false&perPage=100`
       )
-      setUnassignedReceipts(receiptsData)
+
+      // Handle both array and paginated response formats
+      const receiptsData = Array.isArray(receiptsResponse)
+        ? receiptsResponse
+        : (receiptsResponse.data || [])
+
+      // Filter out already assigned receipts
+      const deliveryReceipts = await apiClient.get<any[]>(DELIVERY_ENDPOINTS.receipts)
+      const assignedReceiptIds = new Set(
+        Array.isArray(deliveryReceipts)
+          ? deliveryReceipts.map((dr: any) => dr.receipt_id)
+          : []
+      )
+
+      const unassigned = receiptsData.filter(
+        (receipt: any) => !assignedReceiptIds.has(receipt.id)
+      )
+
+      setUnassignedReceipts(unassigned)
     } catch (error) {
       toast.error('فشل تحميل البيانات')
-      console.error(error)
+      console.error('Error loading data:', error)
     } finally {
       setLoadingData(false)
     }
@@ -104,13 +120,16 @@ export function DeliveryAssignmentForm({
       }
 
       await apiClient.post(DELIVERY_ENDPOINTS.assign, data)
-      toast.success('تم تعيين السائق بنجاح')
-      onOpenChange(false)
-      onSuccess()
 
-      // Reset form
+      // Reset form first
       setSelectedReceiptId('')
       setSelectedDriverId('')
+
+      // Close drawer
+      onOpenChange(false)
+
+      // Call success callback (this will refresh data and show toast)
+      onSuccess()
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'فشل تعيين السائق'
@@ -120,9 +139,9 @@ export function DeliveryAssignmentForm({
     }
   }
 
-  const selectedReceipt = unassignedReceipts.find(
-    (r) => r.id.toString() === selectedReceiptId
-  )
+  const selectedReceipt = Array.isArray(unassignedReceipts)
+    ? unassignedReceipts.find((r) => r.id.toString() === selectedReceiptId)
+    : null
 
   return (
     <Drawer
@@ -149,7 +168,7 @@ export function DeliveryAssignmentForm({
               <Select
                 value={selectedReceiptId}
                 onValueChange={setSelectedReceiptId}
-                disabled={loadingData || loading}
+                disabled={loadingData || loading || !!preselectedReceiptId}
               >
                 <SelectTrigger id="receipt">
                   <SelectValue placeholder="اختر طلب التوصيل" />
@@ -172,6 +191,11 @@ export function DeliveryAssignmentForm({
                   )}
                 </SelectContent>
               </Select>
+              {preselectedReceiptId && (
+                <p className="text-xs text-muted-foreground text-right">
+                  الطلب محدد مسبقاً
+                </p>
+              )}
             </div>
 
             {/* Selected Receipt Details */}

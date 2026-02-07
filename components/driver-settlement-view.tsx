@@ -10,6 +10,7 @@ import type {
   DeliveryReceiptWithDetails,
   DeliveryGuy,
   MarkPaidDto,
+  UnpaidByDriverResponse,
 } from '@/lib/types/delivery.types'
 import { formatCurrency } from '@/lib/utils/currency'
 import { formatDateTime } from '@/lib/utils/date'
@@ -39,6 +40,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { OrderDetailDrawer } from '@/components/order-detail-drawer'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 export function DriverSettlementView() {
   const { user } = useAuth()
@@ -50,6 +62,9 @@ export function DriverSettlementView() {
   const [loading, setLoading] = useState(false)
   const [loadingDrivers, setLoadingDrivers] = useState(true)
   const [settling, setSettling] = useState(false)
+  const [selectedReceiptId, setSelectedReceiptId] = useState<number | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [settleConfirmOpen, setSettleConfirmOpen] = useState(false)
 
   const canManage =
     user?.roles.some((role) => ['Admin', 'Manager'].includes(role)) ?? false
@@ -85,10 +100,10 @@ export function DriverSettlementView() {
 
     try {
       setLoading(true)
-      const data = await apiClient.get<DeliveryReceiptWithDetails[]>(
+      const data = await apiClient.get<UnpaidByDriverResponse>(
         DELIVERY_ENDPOINTS.unpaidByDriver(parseInt(selectedDriverId, 10))
       )
-      setUnpaidDeliveries(data)
+      setUnpaidDeliveries(Array.isArray(data.deliveries) ? data.deliveries : [])
     } catch (error) {
       toast.error('فشل تحميل التوصيلات غير المدفوعة')
       console.error(error)
@@ -111,16 +126,9 @@ export function DriverSettlementView() {
   const handleSettleAll = async () => {
     if (!selectedDriverId || unpaidDeliveries.length === 0) return
 
-    if (
-      !confirm(
-        `هل أنت متأكد من تسوية جميع التوصيلات (${unpaidDeliveries.length}) للسائق؟`
-      )
-    ) {
-      return
-    }
-
     try {
       setSettling(true)
+      setSettleConfirmOpen(false)
       const data: MarkPaidDto = { is_paid: true }
 
       await Promise.all(
@@ -139,7 +147,7 @@ export function DriverSettlementView() {
   }
 
   const totalOwed = unpaidDeliveries.reduce(
-    (sum, delivery) => sum + (delivery.receipt?.total || 0),
+    (sum, delivery) => sum + (delivery.receipt_total || 0),
     0
   )
 
@@ -224,7 +232,7 @@ export function DriverSettlementView() {
               <div className="flex items-end">
                 {canManage && unpaidDeliveries.length > 0 && (
                   <Button
-                    onClick={handleSettleAll}
+                    onClick={() => setSettleConfirmOpen(true)}
                     disabled={settling}
                     className="w-full"
                   >
@@ -283,7 +291,14 @@ export function DriverSettlementView() {
                 </TableHeader>
                 <TableBody>
                   {unpaidDeliveries.map((delivery) => (
-                    <TableRow key={delivery.id}>
+                    <TableRow
+                      key={delivery.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => {
+                        setSelectedReceiptId(delivery.receipt_id)
+                        setDrawerOpen(true)
+                      }}
+                    >
                       <TableCell className="font-medium">
                         #{delivery.receipt?.id || '-'}
                       </TableCell>
@@ -294,13 +309,15 @@ export function DriverSettlementView() {
                         {delivery.receipt?.location || '-'}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {delivery.receipt?.created_at
-                          ? formatDateTime(delivery.receipt.created_at)
-                          : '-'}
+                        {delivery.receipt?.completed_at
+                          ? formatDateTime(delivery.receipt.completed_at)
+                          : delivery.receipt?.created_at
+                            ? formatDateTime(delivery.receipt.created_at)
+                            : '-'}
                       </TableCell>
                       <TableCell className="font-medium">
-                        {delivery.receipt?.total
-                          ? formatCurrency(delivery.receipt.total)
+                        {delivery.receipt_total
+                          ? formatCurrency(delivery.receipt_total)
                           : '-'}
                       </TableCell>
                       <TableCell>
@@ -308,7 +325,10 @@ export function DriverSettlementView() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleMarkPaid(delivery.id)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleMarkPaid(delivery.id)
+                            }}
                           >
                             <IconCheck className="mr-1 h-4 w-4" />
                             تحديد كمدفوع
@@ -343,6 +363,32 @@ export function DriverSettlementView() {
           </CardContent>
         </Card>
       )}
+
+      {/* Receipt Detail Drawer */}
+      <OrderDetailDrawer
+        receiptId={selectedReceiptId}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+      />
+
+      {/* Settle All Confirmation Dialog */}
+      <AlertDialog open={settleConfirmOpen} onOpenChange={setSettleConfirmOpen}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-right">تأكيد تسوية الكل</AlertDialogTitle>
+            <AlertDialogDescription className="text-right">
+              هل أنت متأكد من تسوية جميع التوصيلات ({unpaidDeliveries.length}) للسائق{' '}
+              {selectedDriver?.name}؟ المبلغ الإجمالي: {formatCurrency(totalOwed)}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row-reverse gap-2">
+            <AlertDialogAction onClick={handleSettleAll}>
+              تأكيد التسوية
+            </AlertDialogAction>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

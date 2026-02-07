@@ -49,15 +49,6 @@ export interface TableInfo {
   status: 'AVAILABLE' | 'OCCUPIED' | 'RESERVED'
 }
 
-// Applied discount info
-export interface AppliedDiscount {
-  discount_id: number
-  discount_name: string
-  discount_type: 'PERCENTAGE' | 'FIXED'
-  discount_value: string
-  amount_saved: string
-}
-
 // Full receipt detail (GET /receipts/{id})
 export interface ReceiptDetail {
   id: number
@@ -69,9 +60,8 @@ export interface ReceiptDetail {
   table?: TableInfo
   items: ReceiptItemDetail[]
   subtotal: string
-  discount_amount: string
+  discount: string
   total: string
-  applied_discounts: AppliedDiscount[]
   notes?: string
   created_by_name: string
   created_at: string
@@ -125,4 +115,12 @@ export interface OrderItem {
   }
   quantity: number
   notes: string
+}
+
+// Delivery customer from GET /receipts/customers
+export interface DeliveryCustomer {
+  customer_name: string
+  phone_number: string
+  last_order_date: string
+  order_count: number
 }

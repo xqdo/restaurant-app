@@ -56,17 +56,29 @@ export interface DeliveryGuyStats {
 export interface DeliveryReceiptWithDetails extends DeliveryReceipt {
   receipt?: {
     id: number
-    total: number
+    number?: number
     phone_number?: string
     location?: string
-    created_at: string
+    customer_name?: string
+    notes?: string | null
+    completed_at?: string | null
+    created_at?: string
     is_delivery: boolean
   }
+  receipt_total?: number
+  receipt_subtotal?: number
+  receipt_discount?: number
   delivery_guy?: {
     id: number
     name: string
     phone_number: string
   }
+}
+
+export interface UnpaidByDriverResponse {
+  deliveries: DeliveryReceiptWithDetails[]
+  total_debt: number
+  count: number
 }
 
 export interface DeliveryReceiptQueryFilters {

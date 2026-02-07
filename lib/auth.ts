@@ -2,7 +2,7 @@
  * ⚠️ DEPRECATED - Phase 0 Migration
  *
  * This file contains server-side JWT and password utilities.
- * With the migration to external backend API (192.168.0.238:5000),
+ * With the migration to external backend API (192.168.100.75:5000),
  * these functions are NO LONGER USED.
  *
  * The backend now handles:

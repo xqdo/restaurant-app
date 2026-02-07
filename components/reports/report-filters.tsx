@@ -12,9 +12,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { IconFilter, IconX } from '@tabler/icons-react'
+import { IconFilter, IconPrinter, IconX } from '@tabler/icons-react'
 import { type ReportFilters, type ReportPeriod } from '@/lib/types/report.types'
 import { formatDateForAPI } from '@/lib/utils/date'
+import { startOfWeek, startOfMonth } from 'date-fns'
 
 interface ReportFiltersProps {
   filters: ReportFilters
@@ -25,9 +26,8 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
   const [localFilters, setLocalFilters] = useState<ReportFilters>(filters)
 
   const handlePeriodChange = (period: ReportPeriod) => {
-    const newFilters = { ...localFilters, period, page: 1 }
+    const newFilters = { ...localFilters, period }
 
-    // If switching from custom to predefined period, clear custom dates
     if (period !== 'custom') {
       delete newFilters.startDate
       delete newFilters.endDate
@@ -38,7 +38,7 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
   }
 
   const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
-    const newFilters = { ...localFilters, [field]: value, page: 1 }
+    const newFilters = { ...localFilters, [field]: value }
     setLocalFilters(newFilters)
   }
 
@@ -48,29 +48,33 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
 
   const handleClearFilters = () => {
     const newFilters: ReportFilters = {
-      period: '7days',
-      page: 1,
-      limit: 50,
+      period: 'today',
     }
     setLocalFilters(newFilters)
     onFiltersChange(newFilters)
   }
 
-  const hasActiveFilters = filters.period !== '7days' || filters.startDate || filters.endDate
+  const hasActiveFilters = filters.period !== 'today' || filters.startDate || filters.endDate
 
   return (
-    <div className="border rounded-lg p-4 space-y-4">
+    <div className="border rounded-lg p-4 space-y-4 no-print">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <IconFilter className="h-5 w-5" />
           <h3 className="font-semibold">الفترة الزمنية</h3>
         </div>
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-            <IconX className="h-4 w-4" />
-            مسح الفلاتر
+        <div className="flex items-center gap-2">
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+              <IconX className="h-4 w-4" />
+              مسح الفلاتر
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={() => window.print()}>
+            <IconPrinter className="h-4 w-4" />
+            طباعة
           </Button>
-        )}
+        </div>
       </div>
 
       {/* Desktop: ToggleGroup */}
@@ -81,9 +85,10 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
           onValueChange={(value) => value && handlePeriodChange(value as ReportPeriod)}
           className="justify-start"
         >
-          <ToggleGroupItem value="7days">آخر 7 أيام</ToggleGroupItem>
-          <ToggleGroupItem value="30days">آخر 30 يوماً</ToggleGroupItem>
-          <ToggleGroupItem value="90days">آخر 90 يوماً</ToggleGroupItem>
+          <ToggleGroupItem value="today">اليوم</ToggleGroupItem>
+          <ToggleGroupItem value="yesterday">أمس</ToggleGroupItem>
+          <ToggleGroupItem value="weekly">هذا الأسبوع</ToggleGroupItem>
+          <ToggleGroupItem value="monthly">هذا الشهر</ToggleGroupItem>
           <ToggleGroupItem value="custom">مخصص</ToggleGroupItem>
         </ToggleGroup>
       </div>
@@ -98,9 +103,10 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
             <SelectValue placeholder="اختر الفترة" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7days">آخر 7 أيام</SelectItem>
-            <SelectItem value="30days">آخر 30 يوماً</SelectItem>
-            <SelectItem value="90days">آخر 90 يوماً</SelectItem>
+            <SelectItem value="today">اليوم</SelectItem>
+            <SelectItem value="yesterday">أمس</SelectItem>
+            <SelectItem value="weekly">هذا الأسبوع</SelectItem>
+            <SelectItem value="monthly">هذا الشهر</SelectItem>
             <SelectItem value="custom">مخصص</SelectItem>
           </SelectContent>
         </Select>
@@ -149,37 +155,45 @@ export function ReportFilters({ filters, onFiltersChange }: ReportFiltersProps) 
 /**
  * Calculate date range based on period
  */
-export function calculateDateRange(period: ReportPeriod): {
+export function calculateDateRange(
+  period: ReportPeriod,
+  customStartDate?: string,
+  customEndDate?: string,
+): {
   startDate: string
   endDate: string
 } {
   const today = new Date()
-  const endDate = formatDateForAPI(today)
-
-  let startDate: string
+  const todayStr = formatDateForAPI(today)
 
   switch (period) {
-    case '7days': {
-      const sevenDaysAgo = new Date(today)
-      sevenDaysAgo.setDate(today.getDate() - 7)
-      startDate = formatDateForAPI(sevenDaysAgo)
-      break
-    }
-    case '30days': {
-      const thirtyDaysAgo = new Date(today)
-      thirtyDaysAgo.setDate(today.getDate() - 30)
-      startDate = formatDateForAPI(thirtyDaysAgo)
-      break
-    }
-    case '90days': {
-      const ninetyDaysAgo = new Date(today)
-      ninetyDaysAgo.setDate(today.getDate() - 90)
-      startDate = formatDateForAPI(ninetyDaysAgo)
-      break
-    }
-    default:
-      startDate = endDate
-  }
+    case 'today':
+      return { startDate: todayStr, endDate: todayStr }
 
-  return { startDate, endDate }
+    case 'yesterday': {
+      const yesterday = new Date(today)
+      yesterday.setDate(today.getDate() - 1)
+      const yesterdayStr = formatDateForAPI(yesterday)
+      return { startDate: yesterdayStr, endDate: yesterdayStr }
+    }
+
+    case 'weekly': {
+      const weekStart = startOfWeek(today, { weekStartsOn: 6 })
+      return { startDate: formatDateForAPI(weekStart), endDate: todayStr }
+    }
+
+    case 'monthly': {
+      const monthStart = startOfMonth(today)
+      return { startDate: formatDateForAPI(monthStart), endDate: todayStr }
+    }
+
+    case 'custom':
+      return {
+        startDate: customStartDate || todayStr,
+        endDate: customEndDate || todayStr,
+      }
+
+    default:
+      return { startDate: todayStr, endDate: todayStr }
+  }
 }

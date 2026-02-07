@@ -24,6 +24,7 @@ export default function RootLayout({
       <body
         className={`${cairo.variable} antialiased`}
         dir="rtl"
+        suppressHydrationWarning
       >
         <Providers>{children}</Providers>
       </body>

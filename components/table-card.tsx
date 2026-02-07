@@ -62,7 +62,7 @@ export function TableCard({
                 <IconDots className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="text-right" dir="rtl">
+            <DropdownMenuContent align="end" className="text-right">
               <DropdownMenuLabel className="text-right">الإجراءات</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -85,7 +85,7 @@ export function TableCard({
                 <TableStatusBadge status={table.status} />
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="text-right" dir="rtl">
+            <DropdownMenuContent align="start" className="text-right">
               <DropdownMenuLabel className="text-right">تغيير الحالة</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleStatusClick('AVAILABLE')} className="text-right">

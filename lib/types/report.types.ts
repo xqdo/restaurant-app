@@ -4,7 +4,7 @@
  */
 
 // Period types for report filters
-export type ReportPeriod = '7days' | '30days' | '90days' | 'custom'
+export type ReportPeriod = 'today' | 'yesterday' | 'weekly' | 'monthly' | 'custom'
 
 // Daily Sales Report (GET /reports/sales/daily?date=YYYY-MM-DD)
 export interface SalesReportDto {
@@ -135,6 +135,26 @@ export interface ReportFilters {
   period: ReportPeriod
   startDate?: string
   endDate?: string
-  page?: number
-  limit?: number
+}
+
+// Summary by order type for reports
+export interface OrderTypeSummary {
+  orderType: import('@/lib/types/receipt.types').OrderType
+  label: string
+  paidCount: number
+  unpaidCount: number
+  paidTotal: number
+  unpaidTotal: number
+  totalCount: number
+  totalAmount: number
+}
+
+export interface ReportSummary {
+  totalReceipts: number
+  totalPaid: number
+  totalUnpaid: number
+  totalRevenue: number
+  paidRevenue: number
+  unpaidRevenue: number
+  byOrderType: OrderTypeSummary[]
 }

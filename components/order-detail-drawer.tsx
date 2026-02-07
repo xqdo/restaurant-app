@@ -6,15 +6,18 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { IconCheck, IconTag } from '@tabler/icons-react'
+import { IconCheck, IconTag, IconPrinter, IconTruck } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAuth } from '@/hooks/use-auth'
+import { usePrintReceipt } from '@/hooks/use-print-receipt'
 import { apiClient } from '@/lib/api/client'
-import { ORDER_ENDPOINTS } from '@/lib/api/endpoints'
+import { ORDER_ENDPOINTS, DELIVERY_ENDPOINTS } from '@/lib/api/endpoints'
 import type { ReceiptDetail } from '@/lib/types/receipt.types'
 import { formatDateTime } from '@/lib/utils/date'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Drawer,
   DrawerClose,
@@ -28,7 +31,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { DeliveryBadge } from '@/components/delivery-badge'
 import { ReceiptItemsList } from '@/components/receipt-items-list'
 import { ReceiptTotals } from '@/components/receipt-totals'
-import { ApplyDiscountDialog } from '@/components/apply-discount-dialog'
+import { DeliveryAssignmentForm } from '@/components/delivery-assignment-form'
+import { PrintableReceipt } from '@/components/printable-receipt'
+import { PrintableOrderTicket } from '@/components/printable-order-ticket'
 
 interface OrderDetailDrawerProps {
   receiptId: number | null
@@ -45,10 +50,13 @@ export function OrderDetailDrawer({
 }: OrderDetailDrawerProps) {
   const isMobile = useIsMobile()
   const { user } = useAuth()
+  const { printReceipt, isPrinting, receiptData, printRef, printType } = usePrintReceipt()
   const [receipt, setReceipt] = useState<ReceiptDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [completing, setCompleting] = useState(false)
-  const [applyDiscountOpen, setApplyDiscountOpen] = useState(false)
+  const [quickDiscount, setQuickDiscount] = useState<string>('')
+  const [deliveryAssignOpen, setDeliveryAssignOpen] = useState(false)
+  const [isAssignedToDelivery, setIsAssignedToDelivery] = useState(false)
 
   // Fetch receipt details when drawer opens
   useEffect(() => {
@@ -95,9 +103,8 @@ export function OrderDetailDrawer({
           notes: item.notes,
         })),
         subtotal: response.subtotal || '0',
-        discount_amount: response.discount_amount || '0',
+        discount: response.discount || '0',
         total: response.total || '0',
-        applied_discounts: response.applied_discounts || [],
         notes: response.notes,
         created_by_name: response.baseEntity?.createdByUser?.fullname || 'غير معروف',
         created_at: response.baseEntity?.created_at || '',
@@ -105,6 +112,11 @@ export function OrderDetailDrawer({
       }
 
       setReceipt(transformedReceipt)
+
+      // Check if this delivery order is already assigned
+      if (response.is_delivery) {
+        await checkDeliveryAssignment(receiptId)
+      }
     } catch (error) {
       toast.error('فشل تحميل تفاصيل الطلب')
       console.error('Failed to fetch receipt:', error)
@@ -114,15 +126,30 @@ export function OrderDetailDrawer({
     }
   }
 
-  const canApplyDiscount = (): boolean => {
-    if (!user || !user.roles) return false
-    const allowedRoles = ['Admin', 'Manager', 'Cashier', 'Waiter']
-    return user.roles.some(role => allowedRoles.includes(role))
+  const checkDeliveryAssignment = async (receiptId: number) => {
+    try {
+      // Check if receipt is already assigned to a delivery driver
+      const deliveryReceipts = await apiClient.get<any[]>(DELIVERY_ENDPOINTS.receipts)
+      const assigned = deliveryReceipts.some((dr: any) => dr.receipt_id === receiptId)
+      setIsAssignedToDelivery(assigned)
+    } catch (error) {
+      console.error('Failed to check delivery assignment:', error)
+      setIsAssignedToDelivery(false)
+    }
   }
 
-  const handleDiscountApplied = () => {
-    // Refresh receipt details to show updated discount
+  const handleDeliveryAssigned = () => {
+    // Refresh receipt details and parent list
     fetchReceiptDetail()
+    onUpdate?.()
+    toast.success('تم تعيين السائق وإكمال الطلب بنجاح')
+
+    // Automatically print receipt after delivery assignment
+    if (receiptId) {
+      setTimeout(() => {
+        printReceipt(receiptId)
+      }, 500)
+    }
   }
 
   const canComplete = (): boolean => {
@@ -136,8 +163,15 @@ export function OrderDetailDrawer({
 
     try {
       setCompleting(true)
-      await apiClient.put(ORDER_ENDPOINTS.receiptComplete(receiptId))
+      const payload = quickDiscount ? { quick_discount: parseFloat(quickDiscount) } : {}
+      await apiClient.put(ORDER_ENDPOINTS.receiptComplete(receiptId), payload)
       toast.success('تم إكمال الطلب وتحرير الطاولة بنجاح')
+
+      // Automatically print receipt after completion
+      setTimeout(() => {
+        printReceipt(receiptId)
+      }, 500)
+
       fetchReceiptDetail()
       onUpdate?.()
     } catch (error: any) {
@@ -165,16 +199,19 @@ export function OrderDetailDrawer({
                 {receipt && `تم الإنشاء: ${formatDateTime(receipt.created_at)}`}
               </DrawerDescription>
             </div>
-            {receipt && !receipt.completed_at && canApplyDiscount() && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setApplyDiscountOpen(true)}
-              >
-                <IconTag className="h-4 w-4 ml-2" />
-                تطبيق خصم
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {receipt && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => printReceipt(receipt.id)}
+                  disabled={isPrinting}
+                >
+                  <IconPrinter className="h-4 w-4 ml-2" />
+                  {isPrinting ? 'جاري الطباعة...' : 'طباعة'}
+                </Button>
+              )}
+            </div>
           </div>
         </DrawerHeader>
 
@@ -274,29 +311,66 @@ export function OrderDetailDrawer({
                 <h3 className="font-semibold mb-3">الإجمالي</h3>
                 <ReceiptTotals
                   subtotal={receipt.subtotal || '0'}
-                  discountAmount={receipt.discount_amount || '0'}
+                  discount={receipt.discount || '0'}
                   total={receipt.total || '0'}
-                  appliedDiscounts={receipt.applied_discounts || []}
                 />
               </div>
+
+              {/* Quick Discount Input (only for non-completed orders) */}
+              {!receipt.completed_at && canComplete() && (
+                <div className="border rounded-lg p-4">
+                  <Label htmlFor="quick-discount" className="text-sm font-medium mb-2 block">
+                    خصم سريع (اختياري)
+                  </Label>
+                  <Input
+                    id="quick-discount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={quickDiscount}
+                    onChange={(e) => setQuickDiscount(e.target.value)}
+                    className="text-right"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    أدخل مبلغ الخصم الذي سيتم خصمه من الإجمالي
+                  </p>
+                </div>
+              )}
             </>
           )}
         </div>
 
         <DrawerFooter>
-          {receipt && !receipt.completed_at && canComplete() && (
-            <Button
-              onClick={handleCompleteOrder}
-              disabled={completing}
-              className="w-full"
-            >
-              <IconCheck className="h-4 w-4 ml-2" />
-              {completing ? 'جاري الإكمال...' : 'إكمال الطلب وتحرير الطاولة'}
-            </Button>
+          {receipt && !receipt.completed_at && !isAssignedToDelivery && (
+            <>
+              {receipt.is_delivery && canComplete() && (
+                <Button
+                  onClick={() => setDeliveryAssignOpen(true)}
+                  disabled={completing}
+                  className="w-full"
+                >
+                  <IconTruck className="h-4 w-4 ml-2" />
+                  تعيين سائق توصيل
+                </Button>
+              )}
+              {!receipt.is_delivery && canComplete() && (
+                <Button
+                  onClick={handleCompleteOrder}
+                  disabled={completing}
+                  className="w-full"
+                >
+                  <IconCheck className="h-4 w-4 ml-2" />
+                  {completing ? 'جاري الإكمال...' : 'إكمال الطلب وتحرير الطاولة'}
+                </Button>
+              )}
+            </>
           )}
-          {receipt?.completed_at && (
+          {receipt && (receipt.completed_at || isAssignedToDelivery) && (
             <div className="text-center text-sm text-green-600 font-medium py-2">
-              تم إكمال هذا الطلب
+              {receipt.is_delivery && isAssignedToDelivery
+                ? 'تم تعيين سائق التوصيل وإكمال الطلب'
+                : 'تم إكمال هذا الطلب'}
             </div>
           )}
           <DrawerClose asChild>
@@ -306,13 +380,21 @@ export function OrderDetailDrawer({
       </DrawerContent>
 
       {receiptId && (
-        <ApplyDiscountDialog
-          receiptId={receiptId}
-          open={applyDiscountOpen}
-          onOpenChange={setApplyDiscountOpen}
-          onSuccess={handleDiscountApplied}
+        <DeliveryAssignmentForm
+          open={deliveryAssignOpen}
+          onOpenChange={setDeliveryAssignOpen}
+          onSuccess={handleDeliveryAssigned}
+          preselectedReceiptId={receiptId}
         />
       )}
+
+      {/* Hidden printable receipt for printing */}
+      <div className="hidden">
+        <div ref={printRef}>
+          {receiptData && printType === 'order' && <PrintableOrderTicket receipt={receiptData} />}
+          {receiptData && printType === 'final' && <PrintableReceipt receipt={receiptData} />}
+        </div>
+      </div>
     </Drawer>
   )
 }

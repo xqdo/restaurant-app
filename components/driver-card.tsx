@@ -64,7 +64,7 @@ export function DriverCard({
                 <IconDots className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="text-right" dir="rtl">
+            <DropdownMenuContent align="end" className="text-right">
               <DropdownMenuLabel className="text-right">الإجراءات</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleEdit} className="flex-row-reverse">

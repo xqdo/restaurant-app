@@ -565,3 +565,96 @@
     );
   }
 }
+
+/* ==========================================================================
+   PRINT STYLES - 80mm thermal receipt printers & A4 reports
+   ========================================================================== */
+
+@media print {
+  /* Hide everything except print content */
+  body * {
+    visibility: hidden;
+  }
+
+  /* === 80mm Thermal Receipt Printer === */
+  .print-content,
+  .print-content * {
+    visibility: visible;
+  }
+
+  .print-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    direction: rtl;
+  }
+
+  /* Remove default margins */
+  @page {
+    margin: 5mm;
+  }
+
+  /* === A4 Landscape Report Print === */
+  .print-report,
+  .print-report * {
+    visibility: visible !important;
+  }
+
+  .print-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    direction: rtl;
+    padding: 5mm;
+  }
+
+  /* Table borders for print readability */
+  .print-report td,
+  .print-report th {
+    border: 1px solid #ccc !important;
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+
+  /* Ensure text is black on white for print */
+  .print-report * {
+    color: black !important;
+    background: white !important;
+  }
+
+  /* Keep badge styling readable in print */
+  .print-report [data-slot="badge"] {
+    border: 1px solid #666 !important;
+    padding: 1px 6px !important;
+  }
+
+  /* Hide non-print elements */
+  nav,
+  header,
+  footer,
+  .no-print,
+  [data-slot="sidebar"],
+  [data-slot="dialog"],
+  [data-slot="drawer"],
+  button,
+  input,
+  select {
+    display: none !important;
+  }
+
+  /* Ensure proper print layout */
+  html,
+  body {
+    background: white;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Remove shadows and borders for clean print */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}

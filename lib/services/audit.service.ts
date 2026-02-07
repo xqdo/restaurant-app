@@ -3,7 +3,7 @@
  * Client-side service for interacting with the external backend audit API
  *
  * NOTE: This is a client-side service (NO 'server-only' import)
- * It calls the external backend API at http://192.168.0.238:5000
+ * It calls the external backend API at http://192.168.100.75:5000
  */
 
 import { apiClient } from '@/lib/api/client'

@@ -5,7 +5,7 @@
  * With the migration to external backend API, this DAL is NO LONGER USED.
  *
  * Old architecture: Next.js API Routes → DAL → Prisma → PostgreSQL
- * New architecture: Next.js Client → External API (192.168.0.238:5000) → Backend DB
+ * New architecture: Next.js Client → External API (192.168.100.75:5000) → Backend DB
  *
  * This file will be REMOVED in Phase 1.
  * DO NOT use these functions in new code.

@@ -17,14 +17,16 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Switch } from '@/components/ui/switch'
+import { Separator } from '@/components/ui/separator'
 import { apiClient } from '@/lib/api/client'
-import { AUTH_ENDPOINTS } from '@/lib/api/endpoints'
-import type { RegisterDto } from '@/lib/types/auth.types'
+import { AUTH_ENDPOINTS, USER_ENDPOINTS } from '@/lib/api/endpoints'
+import type { RegisterDto, UserListItem, UpdateUserDto } from '@/lib/types/auth.types'
 
 interface UserFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
+  user?: UserListItem | null
 }
 
 const ROLES = [
@@ -36,7 +38,7 @@ const ROLES = [
   { id: 6, name: 'Delivery', label: 'توصيل' },
 ]
 
-export function UserForm({ open, onOpenChange, onSuccess }: UserFormProps) {
+export function UserForm({ open, onOpenChange, onSuccess, user }: UserFormProps) {
   const isMobile = useIsMobile()
   const [fullname, setFullname] = useState('')
   const [username, setUsername] = useState('')
@@ -45,16 +47,31 @@ export function UserForm({ open, onOpenChange, onSuccess }: UserFormProps) {
   const [isActive, setIsActive] = useState(true)
   const [loading, setLoading] = useState(false)
 
-  // Reset form when dialog opens
+  // Reset password fields
+  const [newPassword, setNewPassword] = useState('')
+  const [resettingPassword, setResettingPassword] = useState(false)
+
+  const isEditMode = !!user
+
+  // Populate form when dialog opens
   useEffect(() => {
     if (open) {
-      setFullname('')
-      setUsername('')
-      setPassword('')
-      setSelectedRoles([])
-      setIsActive(true)
+      if (user) {
+        setFullname(user.fullname)
+        setUsername(user.username)
+        setSelectedRoles(user.role_ids)
+        setIsActive(user.is_active)
+        setPassword('')
+      } else {
+        setFullname('')
+        setUsername('')
+        setPassword('')
+        setSelectedRoles([])
+        setIsActive(true)
+      }
+      setNewPassword('')
     }
-  }, [open])
+  }, [open, user])
 
   const toggleRole = (roleId: number) => {
     setSelectedRoles((prev) =>
@@ -73,12 +90,12 @@ export function UserForm({ open, onOpenChange, onSuccess }: UserFormProps) {
       return
     }
 
-    if (!username.trim()) {
+    if (!isEditMode && !username.trim()) {
       toast.error('اسم المستخدم مطلوب')
       return
     }
 
-    if (!password || password.length < 6) {
+    if (!isEditMode && (!password || password.length < 6)) {
       toast.error('كلمة المرور يجب أن تكون 6 أحرف على الأقل')
       return
     }
@@ -91,29 +108,40 @@ export function UserForm({ open, onOpenChange, onSuccess }: UserFormProps) {
     setLoading(true)
 
     try {
-      const registerDto: RegisterDto = {
-        fullname: fullname.trim(),
-        username: username.trim(),
-        password,
-        role_ids: selectedRoles,
-        is_active: isActive,
+      if (isEditMode) {
+        const updateDto: UpdateUserDto = {
+          fullname: fullname.trim(),
+          roleIds: selectedRoles,
+          is_active: isActive,
+        }
+        await apiClient.patch(USER_ENDPOINTS.byId(user.id), updateDto)
+        toast.success('تم تحديث المستخدم بنجاح')
+      } else {
+        const registerDto: RegisterDto = {
+          fullname: fullname.trim(),
+          username: username.trim(),
+          password,
+          roleIds: selectedRoles,
+          is_active: isActive,
+        }
+        await apiClient.post(AUTH_ENDPOINTS.register, registerDto)
+        toast.success('تم إنشاء المستخدم بنجاح')
       }
 
-      await apiClient.post(AUTH_ENDPOINTS.register, registerDto)
-
-      toast.success('تم إنشاء المستخدم بنجاح')
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
-      let errorMessage = 'حدث خطأ أثناء إنشاء المستخدم'
+      let errorMessage = isEditMode
+        ? 'حدث خطأ أثناء تحديث المستخدم'
+        : 'حدث خطأ أثناء إنشاء المستخدم'
 
       if (error instanceof Error) {
         if (error.message.includes('already exists') || error.message.includes('409')) {
           errorMessage = 'اسم المستخدم موجود بالفعل'
         } else if (error.message.includes('Forbidden') || error.message.includes('403')) {
-          errorMessage = 'غير مصرح لك بإنشاء المستخدمين (مطلوب دور المدير)'
+          errorMessage = 'غير مصرح لك بهذا الإجراء (مطلوب دور المدير)'
         } else if (error.message.includes('Unauthorized') || error.message.includes('401')) {
-          errorMessage = 'غير مصرح لك بإنشاء المستخدمين (مطلوب دور المدير)'
+          errorMessage = 'غير مصرح لك بهذا الإجراء (مطلوب دور المدير)'
         } else {
           errorMessage = error.message
         }
@@ -125,6 +153,33 @@ export function UserForm({ open, onOpenChange, onSuccess }: UserFormProps) {
     }
   }
 
+  const handleResetPassword = async () => {
+    if (!user) return
+
+    if (!newPassword || newPassword.length < 6) {
+      toast.error('كلمة المرور يجب أن تكون 6 أحرف على الأقل')
+      return
+    }
+
+    setResettingPassword(true)
+
+    try {
+      await apiClient.patch(USER_ENDPOINTS.resetPassword(user.id), {
+        password: newPassword,
+      })
+      toast.success('تم إعادة تعيين كلمة المرور بنجاح')
+      setNewPassword('')
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'حدث خطأ أثناء إعادة تعيين كلمة المرور'
+      )
+    } finally {
+      setResettingPassword(false)
+    }
+  }
+
   return (
     <Drawer
       open={open}
@@ -133,9 +188,13 @@ export function UserForm({ open, onOpenChange, onSuccess }: UserFormProps) {
     >
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>إضافة مستخدم جديد</DrawerTitle>
+          <DrawerTitle>
+            {isEditMode ? 'تعديل المستخدم' : 'إضافة مستخدم جديد'}
+          </DrawerTitle>
           <DrawerDescription>
-            أنشئ حساب مستخدم جديد وحدد الأدوار المناسبة
+            {isEditMode
+              ? 'عدّل بيانات المستخدم والأدوار المخصصة'
+              : 'أنشئ حساب مستخدم جديد وحدد الأدوار المناسبة'}
           </DrawerDescription>
         </DrawerHeader>
 
@@ -157,41 +216,49 @@ export function UserForm({ open, onOpenChange, onSuccess }: UserFormProps) {
 
             {/* Username */}
             <div className="space-y-2">
-              <Label htmlFor="username">اسم المستخدم *</Label>
+              <Label htmlFor="username">اسم المستخدم {!isEditMode && '*'}</Label>
               <Input
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="ahmed_waiter"
-                required
-                disabled={loading}
+                required={!isEditMode}
+                disabled={loading || isEditMode}
                 dir="ltr"
                 className="text-left"
               />
-              <p className="text-xs text-muted-foreground">
-                أحرف وأرقام فقط، بدون مسافات
-              </p>
+              {isEditMode ? (
+                <p className="text-xs text-muted-foreground">
+                  لا يمكن تغيير اسم المستخدم
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  أحرف وأرقام فقط، بدون مسافات
+                </p>
+              )}
             </div>
 
-            {/* Password */}
-            <div className="space-y-2">
-              <Label htmlFor="password">كلمة المرور *</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                disabled={loading}
-                minLength={6}
-                dir="ltr"
-                className="text-left"
-              />
-              <p className="text-xs text-muted-foreground">
-                6 أحرف على الأقل
-              </p>
-            </div>
+            {/* Password - only in create mode */}
+            {!isEditMode && (
+              <div className="space-y-2">
+                <Label htmlFor="password">كلمة المرور *</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  disabled={loading}
+                  minLength={6}
+                  dir="ltr"
+                  className="text-left"
+                />
+                <p className="text-xs text-muted-foreground">
+                  6 أحرف على الأقل
+                </p>
+              </div>
+            )}
 
             {/* Roles */}
             <div className="space-y-3">
@@ -231,11 +298,50 @@ export function UserForm({ open, onOpenChange, onSuccess }: UserFormProps) {
                 disabled={loading}
               />
             </div>
+
+            {/* Reset Password - only in edit mode */}
+            {isEditMode && (
+              <>
+                <Separator />
+                <div className="space-y-3">
+                  <Label>إعادة تعيين كلمة المرور</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="كلمة المرور الجديدة"
+                      disabled={resettingPassword}
+                      minLength={6}
+                      dir="ltr"
+                      className="text-left"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleResetPassword}
+                      disabled={resettingPassword || !newPassword}
+                    >
+                      {resettingPassword ? 'جاري...' : 'تعيين'}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    6 أحرف على الأقل
+                  </p>
+                </div>
+              </>
+            )}
           </div>
 
           <DrawerFooter>
             <Button type="submit" disabled={loading}>
-              {loading ? 'جاري الإنشاء...' : 'إنشاء المستخدم'}
+              {loading
+                ? isEditMode
+                  ? 'جاري الحفظ...'
+                  : 'جاري الإنشاء...'
+                : isEditMode
+                  ? 'حفظ التعديلات'
+                  : 'إنشاء المستخدم'}
             </Button>
             <DrawerClose asChild>
               <Button variant="outline" disabled={loading}>

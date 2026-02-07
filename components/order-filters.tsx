@@ -22,7 +22,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 
 interface OrderFiltersProps {
   filters: ReceiptQueryFilters
@@ -205,8 +204,8 @@ export function OrderFilters({ filters, onFiltersChange }: OrderFiltersProps) {
 
         {/* Order Type Filter */}
         <div className="space-y-2">
-          <Label>نوع الطلب</Label>
-          <RadioGroup
+          <Label htmlFor="order-type-filter">نوع الطلب</Label>
+          <Select
             value={
               localFilters.is_delivery === true
                 ? 'delivery'
@@ -220,27 +219,16 @@ export function OrderFilters({ filters, onFiltersChange }: OrderFiltersProps) {
                 is_delivery: value === 'all' ? undefined : value === 'delivery',
               })
             }}
-            className="flex flex-col space-y-2"
           >
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <RadioGroupItem value="all" id="all" />
-              <Label htmlFor="all" className="font-normal cursor-pointer">
-                الكل
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <RadioGroupItem value="local" id="local" />
-              <Label htmlFor="local" className="font-normal cursor-pointer">
-                محلي وسفري
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <RadioGroupItem value="delivery" id="delivery" />
-              <Label htmlFor="delivery" className="font-normal cursor-pointer">
-                توصيل
-              </Label>
-            </div>
-          </RadioGroup>
+            <SelectTrigger id="order-type-filter">
+              <SelectValue placeholder="جميع الطلبات" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">الكل</SelectItem>
+              <SelectItem value="local">محلي وسفري</SelectItem>
+              <SelectItem value="delivery">توصيل</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

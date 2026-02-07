@@ -53,3 +53,27 @@ export function formatTime(isoDate: string): string {
 export function formatDateForAPI(date: Date): string {
   return format(date, 'yyyy-MM-dd')
 }
+
+/**
+ * Convert a local date to its start-of-day as a UTC ISO string.
+ * E.g., in UTC+3: "2026-02-07" local midnight → "2026-02-06T21:00:00.000Z"
+ * @param date - Date object representing the local day
+ * @returns ISO string of local midnight in UTC
+ */
+export function localStartOfDayUTC(date: Date): string {
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  return d.toISOString()
+}
+
+/**
+ * Convert a local date to its end-of-day as a UTC ISO string.
+ * E.g., in UTC+3: "2026-02-07" local 23:59:59 → "2026-02-07T20:59:59.999Z"
+ * @param date - Date object representing the local day
+ * @returns ISO string of local end-of-day in UTC
+ */
+export function localEndOfDayUTC(date: Date): string {
+  const d = new Date(date)
+  d.setHours(23, 59, 59, 999)
+  return d.toISOString()
+}

@@ -1,6 +1,6 @@
 /**
  * API Endpoint Constants
- * External backend API at http://192.168.0.238:5000
+ * External backend API at http://192.168.100.75:5000
  */
 
 export const AUTH_ENDPOINTS = {
@@ -9,7 +9,12 @@ export const AUTH_ENDPOINTS = {
   me: '/auth/me',
 } as const
 
-// Future endpoints for Phase 1+
+export const USER_ENDPOINTS = {
+  users: '/auth/users',
+  byId: (id: number) => `/auth/users/${id}`,
+  resetPassword: (id: number) => `/auth/users/${id}/reset-password`,
+} as const
+
 export const MENU_ENDPOINTS = {
   items: '/menu/items',
   sections: '/menu/sections',
@@ -26,6 +31,7 @@ export const TABLE_ENDPOINTS = {
 
 export const ORDER_ENDPOINTS = {
   receipts: '/receipts',
+  customers: '/receipts/customers',
   receiptById: (id: number) => `/receipts/${id}`,
   receiptTotal: (id: number) => `/receipts/${id}/total`,
   receiptComplete: (id: number) => `/receipts/${id}/complete`,
@@ -36,13 +42,6 @@ export const ORDER_ENDPOINTS = {
 export const KITCHEN_ENDPOINTS = {
   pending: '/kitchen/pending',
   byTable: '/kitchen/by-table',
-} as const
-
-export const DISCOUNT_ENDPOINTS = {
-  discounts: '/discounts',
-  discountById: (id: number) => `/discounts/${id}`,
-  toggleActive: (id: number) => `/discounts/${id}/toggle-active`,
-  apply: '/discounts/apply',
 } as const
 
 export const DELIVERY_ENDPOINTS = {
@@ -65,7 +64,6 @@ export const REPORTS_ENDPOINTS = {
   revenueBySection: '/reports/revenue/by-section',
   staffPerformance: '/reports/staff/performance',
   tableTurnover: '/reports/tables/turnover',
-  discountUsage: '/reports/discounts/usage',
 } as const
 
 export const AUDIT_ENDPOINTS = {

@@ -9,9 +9,10 @@ import { useState, useEffect, useMemo } from 'react'
 import { IconMinus, IconPlus, IconTrash, IconSearch, IconTable } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { usePrintReceipt } from '@/hooks/use-print-receipt'
 import { apiClient } from '@/lib/api/client'
 import { ORDER_ENDPOINTS, TABLE_ENDPOINTS, MENU_ENDPOINTS } from '@/lib/api/endpoints'
-import type { CreateReceiptDto, OrderType } from '@/lib/types/receipt.types'
+import type { CreateReceiptDto, OrderType, DeliveryCustomer } from '@/lib/types/receipt.types'
 import type { MenuItem, MenuSection } from '@/lib/types/menu.types'
 import { formatCurrency } from '@/lib/utils/currency'
 import { Button } from '@/components/ui/button'
@@ -31,6 +32,9 @@ import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Card } from '@/components/ui/card'
 import { TableStatusBadge } from '@/components/table-status-badge'
+import { Combobox } from '@/components/ui/combobox'
+import { PrintableReceipt } from '@/components/printable-receipt'
+import { PrintableOrderTicket } from '@/components/printable-order-ticket'
 
 interface OrderFormProps {
   open: boolean
@@ -41,7 +45,7 @@ interface OrderFormProps {
 interface Table {
   id: number
   number: number
-  status: string
+  status: 'AVAILABLE' | 'OCCUPIED' | 'RESERVED'
 }
 
 interface OrderItem {
@@ -51,6 +55,7 @@ interface OrderItem {
 }
 
 export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
+  const { printReceipt, receiptData, printRef, printType } = usePrintReceipt()
 
   // Order type state
   const [orderType, setOrderType] = useState<OrderType>('local')
@@ -63,6 +68,9 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
   const [customerName, setCustomerName] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [location, setLocation] = useState('')
+  const [customers, setCustomers] = useState<DeliveryCustomer[]>([])
+  const [loadingCustomers, setLoadingCustomers] = useState(false)
+  const [isPhoneAutoFilled, setIsPhoneAutoFilled] = useState(false)
 
   // Menu data
   const [sections, setSections] = useState<MenuSection[]>([])
@@ -82,6 +90,9 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
       if (orderType === 'local') {
         fetchAvailableTables()
       }
+      if (orderType === 'delivery') {
+        fetchDeliveryCustomers()
+      }
     }
   }, [open, orderType])
 
@@ -96,6 +107,7 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
       setOrderItems([])
       setOrderNotes('')
       setSearchTerm('')
+      setIsPhoneAutoFilled(false)
     }
   }, [open])
 
@@ -127,6 +139,36 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
     } finally {
       setLoadingMenu(false)
     }
+  }
+
+  const fetchDeliveryCustomers = async () => {
+    try {
+      setLoadingCustomers(true)
+      const response = await apiClient.get<DeliveryCustomer[]>(ORDER_ENDPOINTS.customers)
+      setCustomers(response || [])
+    } catch (error) {
+      toast.error('فشل تحميل قائمة العملاء')
+      console.error('Failed to fetch customers:', error)
+    } finally {
+      setLoadingCustomers(false)
+    }
+  }
+
+  const handleCustomerSelect = (selectedCustomerName: string) => {
+    setCustomerName(selectedCustomerName)
+
+    const customer = customers.find(c => c.customer_name === selectedCustomerName)
+    if (customer) {
+      setPhoneNumber(customer.phone_number)
+      setIsPhoneAutoFilled(true)
+    } else {
+      setIsPhoneAutoFilled(false)
+    }
+  }
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhoneNumber(e.target.value)
+    setIsPhoneAutoFilled(false)
   }
 
   // Filter menu items by search term
@@ -262,9 +304,16 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
       }
       // Take-away sends neither table_id nor delivery info
 
-      await apiClient.post(ORDER_ENDPOINTS.receipts, createDto)
+      const response = await apiClient.post<{ id: number }>(ORDER_ENDPOINTS.receipts, createDto)
+      const receiptId = response.id
 
       toast.success('تم إنشاء الطلب بنجاح')
+
+      // Automatically print order ticket after creation
+      setTimeout(() => {
+        printReceipt(receiptId, 'order')
+      }, 500)
+
       onSuccess()
       onOpenChange(false)
     } catch (error) {
@@ -344,32 +393,59 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
                   </TabsContent>
 
                   <TabsContent value="delivery" className="mt-4 space-y-3">
-                    <Input
-                      type="text"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="اسم العميل"
-                      disabled={loading}
-                      dir="rtl"
-                      className="text-right"
-                    />
-                    <Input
-                      type="tel"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="رقم الهاتف (05xxxxxxxx)"
-                      disabled={loading}
-                      dir="rtl"
-                      className="text-right"
-                    />
-                    <Input
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      placeholder="العنوان"
-                      disabled={loading}
-                      dir="rtl"
-                      className="text-right"
-                    />
+                    <div className="space-y-1">
+                      <Label className="text-sm font-medium">اسم العميل</Label>
+                      <Combobox
+                        value={customerName}
+                        onValueChange={handleCustomerSelect}
+                        options={customers.map(c => {
+                          const lastOrderDate = new Date(c.last_order_date)
+                          const daysAgo = Math.floor((Date.now() - lastOrderDate.getTime()) / (1000 * 60 * 60 * 24))
+                          const dayText = daysAgo === 0 ? 'اليوم' : daysAgo === 1 ? 'أمس' : `منذ ${daysAgo} ${daysAgo <= 10 ? 'أيام' : 'يوم'}`
+                          const orderText = c.order_count === 1 ? 'طلب واحد' : c.order_count === 2 ? 'طلبان' : `${c.order_count} ${c.order_count <= 10 ? 'طلبات' : 'طلب'}`
+
+                          return {
+                            value: c.customer_name,
+                            label: c.customer_name,
+                            description: `${c.phone_number} • آخر طلب: ${dayText} • ${orderText}`
+                          }
+                        })}
+                        placeholder="ابحث عن عميل أو اكتب اسم جديد..."
+                        emptyText="لا توجد نتائج"
+                        allowCustomValue={true}
+                        disabled={loading || loadingCustomers}
+                        dir="rtl"
+                        className="text-right"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-sm font-medium">رقم الهاتف</Label>
+                      <Input
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={handlePhoneChange}
+                        placeholder="رقم الهاتف (05xxxxxxxx)"
+                        disabled={loading}
+                        dir="rtl"
+                        className="text-right"
+                      />
+                      {isPhoneAutoFilled && (
+                        <p className="text-xs text-muted-foreground text-right">
+                          من طلب سابق
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-sm font-medium">العنوان</Label>
+                      <Input
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        placeholder="العنوان"
+                        disabled={loading}
+                        dir="rtl"
+                        className="text-right"
+                      />
+                    </div>
                   </TabsContent>
                 </Tabs>
 
@@ -596,6 +672,14 @@ export function OrderForm({ open, onOpenChange, onSuccess }: OrderFormProps) {
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {/* Hidden printable receipt for printing */}
+      <div className="hidden">
+        <div ref={printRef}>
+          {receiptData && printType === 'order' && <PrintableOrderTicket receipt={receiptData} />}
+          {receiptData && printType === 'final' && <PrintableReceipt receipt={receiptData} />}
+        </div>
+      </div>
     </Dialog>
   )
 }

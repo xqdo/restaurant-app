@@ -8,7 +8,6 @@ import {
   IconTable,
   IconShoppingCart,
   IconPackage,
-  IconDiscount,
   IconTruck,
   IconReport,
   IconDashboard,
@@ -76,12 +75,6 @@ const navSections = [
         url: "/items",
         icon: IconPackage,
         roles: ['Admin', 'Manager'],
-      },
-      {
-        title: "الخصومات",
-        url: "/discounts",
-        icon: IconDiscount,
-        roles: ['Admin', 'Manager', 'Cashier'],
       },
       {
         title: "إدارة المستخدمين",
