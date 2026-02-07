@@ -123,22 +123,12 @@ export function ItemForm({
     formData.append("file", file)
 
     try {
-      const token = localStorage.getItem('auth-token')
-      const response = await fetch("/api/images", {
-        method: "POST",
-        headers: {
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        body: formData,
-      })
+      const response = await apiClient.postFormData<{ data: { id: number; path: string }; message: string }>(
+        MENU_ENDPOINTS.images,
+        formData
+      )
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || "فشل رفع الصورة")
-      }
-
-      setUploadedImageId(data.data.id)
+      setUploadedImageId(response.data.id)
       toast.success("تم رفع الصورة بنجاح")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل رفع الصورة")

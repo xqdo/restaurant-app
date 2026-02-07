@@ -33,9 +33,9 @@ export function PrintableReceipt({ receipt }: PrintableReceiptProps) {
     }
   }
 
-  const formatPrice = (price: string | undefined) => {
-    if (!price) return '0'
-    const parsed = parseFloat(price)
+  const formatPrice = (price: string | number | undefined) => {
+    if (price === undefined || price === null) return '0'
+    const parsed = typeof price === 'number' ? price : parseFloat(price)
     if (isNaN(parsed)) return '0'
     // Format with thousand separators, no decimals
     return parsed.toLocaleString('en-US', {

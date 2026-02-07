@@ -87,6 +87,7 @@ export function usePrintReceipt() {
           notes: item.notes,
         })),
         subtotal: response.subtotal || '0',
+        discount: response.discount || '0',
         discount_amount: response.discount_amount || '0',
         total: response.total || '0',
         applied_discounts: response.applied_discounts || [],

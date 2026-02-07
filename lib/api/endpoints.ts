@@ -18,6 +18,7 @@ export const USER_ENDPOINTS = {
 export const MENU_ENDPOINTS = {
   items: '/menu/items',
   sections: '/menu/sections',
+  images: '/menu/images',
   itemById: (id: number) => `/menu/items/${id}`,
   sectionById: (id: number) => `/menu/sections/${id}`,
 } as const

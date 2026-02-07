@@ -256,8 +256,8 @@ export function DeliveryReceiptsList() {
                       : '-'}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {delivery.receipt?.total
-                      ? formatCurrency(delivery.receipt.total)
+                    {delivery.receipt_total
+                      ? formatCurrency(delivery.receipt_total)
                       : '-'}
                   </TableCell>
                   <TableCell>

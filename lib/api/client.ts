@@ -119,6 +119,21 @@ class ApiClient {
   }
 
   /**
+   * POST request with FormData (for file uploads)
+   */
+  async postFormData<T>(endpoint: string, formData: FormData): Promise<T> {
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      method: 'POST',
+      headers: {
+        ...this.getAuthHeader(),
+      },
+      body: formData,
+    })
+
+    return this.handleResponse<T>(response)
+  }
+
+  /**
    * DELETE request
    */
   async delete<T>(endpoint: string): Promise<T> {

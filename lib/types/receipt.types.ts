@@ -61,11 +61,13 @@ export interface ReceiptDetail {
   items: ReceiptItemDetail[]
   subtotal: string
   discount: string
+  discount_amount?: string
   total: string
   notes?: string
   created_by_name: string
   created_at: string
   completed_at?: string
+  applied_discounts?: { discount_name: string; amount_saved: number }[]
 }
 
 // List item (simplified for table view)
